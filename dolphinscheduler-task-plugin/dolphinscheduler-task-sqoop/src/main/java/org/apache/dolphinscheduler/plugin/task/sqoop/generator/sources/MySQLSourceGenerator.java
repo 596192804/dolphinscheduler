@@ -17,11 +17,7 @@
 
 package org.apache.dolphinscheduler.plugin.task.sqoop.generator.sources;
 
-import static org.apache.dolphinscheduler.plugin.datasource.api.utils.PasswordUtils.decodePassword;
-import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.COMMA;
-import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.DOUBLE_QUOTES;
-import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.EQUAL_SIGN;
-import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.SPACE;
+import static org.apache.dolphinscheduler.plugin.task.datasource.PasswordUtils.decodePassword;
 import static org.apache.dolphinscheduler.plugin.task.sqoop.SqoopConstants.COLUMNS;
 import static org.apache.dolphinscheduler.plugin.task.sqoop.SqoopConstants.DB_CONNECT;
 import static org.apache.dolphinscheduler.plugin.task.sqoop.SqoopConstants.DB_PWD;
@@ -33,16 +29,20 @@ import static org.apache.dolphinscheduler.plugin.task.sqoop.SqoopConstants.QUERY
 import static org.apache.dolphinscheduler.plugin.task.sqoop.SqoopConstants.QUERY_WHERE;
 import static org.apache.dolphinscheduler.plugin.task.sqoop.SqoopConstants.QUERY_WITHOUT_CONDITION;
 import static org.apache.dolphinscheduler.plugin.task.sqoop.SqoopConstants.TABLE;
+import static org.apache.dolphinscheduler.spi.task.TaskConstants.COMMA;
+import static org.apache.dolphinscheduler.spi.task.TaskConstants.DOUBLE_QUOTES;
+import static org.apache.dolphinscheduler.spi.task.TaskConstants.EQUAL_SIGN;
+import static org.apache.dolphinscheduler.spi.task.TaskConstants.SPACE;
 
-import org.apache.dolphinscheduler.plugin.datasource.api.utils.DataSourceUtils;
-import org.apache.dolphinscheduler.plugin.task.api.model.Property;
+import org.apache.dolphinscheduler.plugin.task.datasource.BaseConnectionParam;
+import org.apache.dolphinscheduler.plugin.task.datasource.DatasourceUtil;
 import org.apache.dolphinscheduler.plugin.task.sqoop.SqoopQueryType;
-import org.apache.dolphinscheduler.plugin.task.sqoop.SqoopTaskExecutionContext;
 import org.apache.dolphinscheduler.plugin.task.sqoop.generator.ISourceGenerator;
 import org.apache.dolphinscheduler.plugin.task.sqoop.parameter.SqoopParameters;
 import org.apache.dolphinscheduler.plugin.task.sqoop.parameter.sources.SourceMysqlParameter;
-import org.apache.dolphinscheduler.spi.datasource.BaseConnectionParam;
 import org.apache.dolphinscheduler.spi.enums.DbType;
+import org.apache.dolphinscheduler.spi.task.Property;
+import org.apache.dolphinscheduler.spi.task.request.TaskRequest;
 import org.apache.dolphinscheduler.spi.utils.JSONUtils;
 import org.apache.dolphinscheduler.spi.utils.StringUtils;
 
@@ -54,12 +54,12 @@ import org.slf4j.LoggerFactory;
 /**
  * mysql source generator
  */
-public class MySQLSourceGenerator implements ISourceGenerator {
+public class MysqlSourceGenerator implements ISourceGenerator {
 
-    private static final Logger logger = LoggerFactory.getLogger(MySQLSourceGenerator.class);
+    private static final Logger logger = LoggerFactory.getLogger(MysqlSourceGenerator.class);
 
     @Override
-    public String generate(SqoopParameters sqoopParameters, SqoopTaskExecutionContext sqoopTaskExecutionContext) {
+    public String generate(SqoopParameters sqoopParameters, TaskRequest taskExecutionContext) {
 
         StringBuilder mysqlSourceSb = new StringBuilder();
 
@@ -67,15 +67,15 @@ public class MySQLSourceGenerator implements ISourceGenerator {
             SourceMysqlParameter sourceMysqlParameter = JSONUtils.parseObject(sqoopParameters.getSourceParams(), SourceMysqlParameter.class);
 
             if (null != sourceMysqlParameter) {
-                BaseConnectionParam baseDataSource = (BaseConnectionParam) DataSourceUtils.buildConnectionParams(
-                        sqoopTaskExecutionContext.getSourcetype(),
-                        sqoopTaskExecutionContext.getSourceConnectionParams());
+                BaseConnectionParam baseDataSource = (BaseConnectionParam) DatasourceUtil.buildConnectionParams(
+                        DbType.of(taskExecutionContext.getSqoopTaskExecutionContext().getSourcetype()),
+                        taskExecutionContext.getSqoopTaskExecutionContext().getSourceConnectionParams());
 
                 if (null != baseDataSource) {
 
                     mysqlSourceSb.append(SPACE).append(DB_CONNECT)
                             .append(SPACE).append(DOUBLE_QUOTES)
-                            .append(DataSourceUtils.getJdbcUrl(DbType.MYSQL, baseDataSource)).append(DOUBLE_QUOTES)
+                            .append(DatasourceUtil.getJdbcUrl(DbType.MYSQL, baseDataSource)).append(DOUBLE_QUOTES)
                         .append(SPACE).append(DB_USERNAME)
                         .append(SPACE).append(baseDataSource.getUser())
                         .append(SPACE).append(DB_PWD)

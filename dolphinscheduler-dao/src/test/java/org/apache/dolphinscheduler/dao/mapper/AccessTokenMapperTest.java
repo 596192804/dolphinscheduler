@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dolphinscheduler.dao.mapper;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -26,7 +25,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.apache.dolphinscheduler.common.enums.UserType;
 import org.apache.dolphinscheduler.common.utils.DateUtils;
-import org.apache.dolphinscheduler.dao.BaseDaoTest;
 import org.apache.dolphinscheduler.dao.entity.AccessToken;
 import org.apache.dolphinscheduler.dao.entity.User;
 
@@ -36,7 +34,12 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -44,13 +47,17 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 /**
  * AccessToken mapper test
  */
-public class AccessTokenMapperTest extends BaseDaoTest {
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@Transactional
+@Rollback
+public class AccessTokenMapperTest {
 
     @Autowired
-    private AccessTokenMapper accessTokenMapper;
+    AccessTokenMapper accessTokenMapper;
 
     @Autowired
-    private UserMapper userMapper;
+    UserMapper userMapper;
 
     /**
      * test insert
@@ -67,7 +74,7 @@ public class AccessTokenMapperTest extends BaseDaoTest {
      * test delete AccessToken By UserId
      */
     @Test
-    public void testDeleteAccessTokenByUserId() {
+    public void testDeleteAccessTokenByUserId() throws Exception {
         Integer userId = 1;
         int insertCount = 0;
 
@@ -187,6 +194,7 @@ public class AccessTokenMapperTest extends BaseDaoTest {
         assertNull(resultAccessToken);
     }
 
+
     /**
      * create accessTokens
      *
@@ -215,8 +223,9 @@ public class AccessTokenMapperTest extends BaseDaoTest {
      *
      * @param userName userName
      * @return user
+     * @throws Exception
      */
-    private User createUser(String userName) {
+    private User createUser(String userName) throws Exception {
         User user = new User();
         user.setUserName(userName);
         user.setUserPassword("123");
@@ -243,8 +252,9 @@ public class AccessTokenMapperTest extends BaseDaoTest {
      * @param userId   userId
      * @param userName userName
      * @return accessToken
+     * @throws Exception
      */
-    private AccessToken createAccessToken(Integer userId, String userName) {
+    private AccessToken createAccessToken(Integer userId, String userName) throws Exception {
         //insertOne
         AccessToken accessToken = new AccessToken();
         accessToken.setUserName(userName);

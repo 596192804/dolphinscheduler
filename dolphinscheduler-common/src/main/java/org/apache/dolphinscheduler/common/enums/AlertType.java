@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dolphinscheduler.common.enums;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
@@ -29,7 +28,8 @@ public enum AlertType {
     EMAIL(0, "email"),
     SMS(1, "SMS");
 
-    AlertType(int code, String descp) {
+
+    AlertType(int code, String descp){
         this.code = code;
         this.descp = descp;
     }

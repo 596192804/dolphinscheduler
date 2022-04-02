@@ -14,13 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dolphinscheduler.dao.mapper;
 
 import org.apache.dolphinscheduler.common.enums.FailureStrategy;
 import org.apache.dolphinscheduler.common.enums.ReleaseState;
 import org.apache.dolphinscheduler.common.enums.WarningType;
-import org.apache.dolphinscheduler.dao.BaseDaoTest;
 import org.apache.dolphinscheduler.dao.entity.ProcessDefinition;
 import org.apache.dolphinscheduler.dao.entity.ProcessLineage;
 import org.apache.dolphinscheduler.dao.entity.ProcessTaskRelation;
@@ -32,9 +30,18 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
-public class WorkFlowLineageMapperTest extends BaseDaoTest {
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@Transactional
+@Rollback(true)
+public class WorkFlowLineageMapperTest {
 
     @Autowired
     private WorkFlowLineageMapper workFlowLineageMapper;
@@ -46,7 +53,7 @@ public class WorkFlowLineageMapperTest extends BaseDaoTest {
     private ScheduleMapper scheduleMapper;
 
     @Autowired
-    private ProcessTaskRelationMapper processTaskRelationMapper;
+    ProcessTaskRelationMapper processTaskRelationMapper;
 
     /**
      * insert

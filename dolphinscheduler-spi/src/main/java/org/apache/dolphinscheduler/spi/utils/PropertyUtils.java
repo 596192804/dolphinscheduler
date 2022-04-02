@@ -21,13 +21,15 @@ import static org.apache.dolphinscheduler.spi.utils.Constants.COMMON_PROPERTIES_
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PropertyUtils {
-
     private static final Logger logger = LoggerFactory.getLogger(PropertyUtils.class);
 
     private static final Properties properties = new Properties();
@@ -76,8 +78,7 @@ public class PropertyUtils {
      * @return property value  with upper case
      */
     public static String getUpperCaseString(String key) {
-        String val = getString(key);
-        return StringUtils.isEmpty(val) ? val : val.toUpperCase();
+        return properties.getProperty(key.trim()).toUpperCase();
     }
 
     /**
@@ -88,8 +89,8 @@ public class PropertyUtils {
      * @return property value
      */
     public static String getString(String key, String defaultVal) {
-        String val = getString(key);
-        return StringUtils.isEmpty(val) ? defaultVal : val;
+        String val = properties.getProperty(key.trim());
+        return val == null ? defaultVal : val;
     }
 
     /**
@@ -109,7 +110,7 @@ public class PropertyUtils {
      */
     public static int getInt(String key, int defaultValue) {
         String value = getString(key);
-        if (StringUtils.isEmpty(value)) {
+        if (value == null) {
             return defaultValue;
         }
 
@@ -128,7 +129,12 @@ public class PropertyUtils {
      * @return property value
      */
     public static boolean getBoolean(String key) {
-        return getBoolean(key, false);
+        String value = properties.getProperty(key.trim());
+        if (null != value) {
+            return Boolean.parseBoolean(value);
+        }
+
+        return false;
     }
 
     /**
@@ -139,29 +145,24 @@ public class PropertyUtils {
      * @return property value
      */
     public static Boolean getBoolean(String key, boolean defaultValue) {
-        String value = getString(key);
-        return StringUtils.isEmpty(value) ? defaultValue : Boolean.parseBoolean(value);
+        String value = properties.getProperty(key.trim());
+        if (null != value) {
+            return Boolean.parseBoolean(value);
+        }
+
+        return defaultValue;
     }
 
     /**
      * get property long value
      *
      * @param key key
-     * @param defaultValue default value
+     * @param defaultVal default value
      * @return property value
      */
-    public static long getLong(String key, long defaultValue) {
-        String value = getString(key);
-        if (StringUtils.isEmpty(value)) {
-            return defaultValue;
-        }
-
-        try {
-            return Long.parseLong(value);
-        } catch (NumberFormatException e) {
-            logger.info(e.getMessage(), e);
-        }
-        return defaultValue;
+    public static long getLong(String key, long defaultVal) {
+        String val = getString(key);
+        return val == null ? defaultVal : Long.parseLong(val);
     }
 
     /**
@@ -173,12 +174,87 @@ public class PropertyUtils {
     }
 
     /**
-     * set value
      * @param key key
-     * @param value value
+     * @param defaultVal default value
+     * @return property value
+     */
+    public static double getDouble(String key, double defaultVal) {
+        String val = getString(key);
+        return val == null ? defaultVal : Double.parseDouble(val);
+    }
+
+    /**
+     * get array
+     *
+     * @param key property name
+     * @param splitStr separator
+     * @return property value through array
+     */
+    public static String[] getArray(String key, String splitStr) {
+        String value = getString(key);
+        if (value == null) {
+            return new String[0];
+        }
+        try {
+            String[] propertyArray = value.split(splitStr);
+            return propertyArray;
+        } catch (NumberFormatException e) {
+            logger.info(e.getMessage(), e);
+        }
+        return new String[0];
+    }
+
+    /**
+     * @param key key
+     * @param type type
+     * @param defaultValue default value
+     * @param <T> T
+     * @return get enum value
+     */
+    public static <T extends Enum<T>> T getEnum(String key, Class<T> type,
+                                                T defaultValue) {
+        String val = getString(key);
+        return val == null ? defaultValue : Enum.valueOf(type, val);
+    }
+
+    /**
+     * get all properties with specified prefix, like: fs.
+     *
+     * @param prefix prefix to search
+     * @return all properties with specified prefix
+     */
+    public static Map<String, String> getPrefixedProperties(String prefix) {
+        Map<String, String> matchedProperties = new HashMap<>();
+        for (String propName : properties.stringPropertyNames()) {
+            if (propName.startsWith(prefix)) {
+                matchedProperties.put(propName, properties.getProperty(propName));
+            }
+        }
+        return matchedProperties;
+    }
+
+    /**
+     *
      */
     public static void setValue(String key, String value) {
         properties.setProperty(key, value);
+    }
+
+    public static Map<String, String> getPropertiesByPrefix(String prefix) {
+        if (StringUtils.isEmpty(prefix)) {
+            return null;
+        }
+        Set<Object> keys = properties.keySet();
+        if (keys.isEmpty()) {
+            return null;
+        }
+        Map<String, String> propertiesMap = new HashMap<>();
+        keys.forEach(k -> {
+            if (k.toString().contains(prefix)) {
+                propertiesMap.put(k.toString().replaceFirst(prefix + ".", ""), properties.getProperty((String) k));
+            }
+        });
+        return propertiesMap;
     }
 
 }

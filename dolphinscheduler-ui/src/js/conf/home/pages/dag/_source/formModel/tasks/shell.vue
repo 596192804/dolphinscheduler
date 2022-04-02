@@ -199,10 +199,7 @@
         this.keypress = () => {
           if (!editor.getOption('readOnly')) {
             editor.showHint({
-              completeSingle: false,
-              extraKeys: {
-                Enter: ''
-              }
+              completeSingle: false
             })
           }
         }

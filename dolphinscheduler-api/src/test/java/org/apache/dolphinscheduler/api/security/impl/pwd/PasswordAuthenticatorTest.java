@@ -57,7 +57,6 @@ public class PasswordAuthenticatorTest extends AbstractControllerTest {
     private User mockUser;
     private Session mockSession;
 
-    @Override
     @Before
     public void setUp() {
         authenticator = new PasswordAuthenticator();

@@ -18,7 +18,6 @@
 package org.apache.dolphinscheduler.dao.mapper;
 
 import org.apache.dolphinscheduler.common.enums.UserType;
-import org.apache.dolphinscheduler.dao.BaseDaoTest;
 import org.apache.dolphinscheduler.dao.entity.ProcessDefinitionLog;
 import org.apache.dolphinscheduler.dao.entity.Project;
 import org.apache.dolphinscheduler.dao.entity.User;
@@ -28,20 +27,38 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
-public class ProcessDefinitionLogMapperTest extends BaseDaoTest {
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@Transactional
+@Rollback(true)
+public class ProcessDefinitionLogMapperTest {
     @Autowired
-    private UserMapper userMapper;
+    ProcessDefinitionMapper processDefinitionMapper;
 
     @Autowired
-    private ProjectMapper projectMapper;
+    UserMapper userMapper;
 
     @Autowired
-    private ProcessDefinitionLogMapper processDefinitionLogMapper;
+    QueueMapper queueMapper;
+
+    @Autowired
+    TenantMapper tenantMapper;
+
+    @Autowired
+    ProjectMapper projectMapper;
+
+    @Autowired
+    ProcessDefinitionLogMapper processDefinitionLogMapper;
 
     /**
      * insert
@@ -142,7 +159,7 @@ public class ProcessDefinitionLogMapperTest extends BaseDaoTest {
     public void testQueryProcessDefinitionVersionsPaging() {
         insertOne();
         Page<ProcessDefinitionLog> page = new Page(1, 3);
-        IPage<ProcessDefinitionLog> processDefinitionLogs = processDefinitionLogMapper.queryProcessDefinitionVersionsPaging(page, 1L,1L);
+        IPage<ProcessDefinitionLog> processDefinitionLogs = processDefinitionLogMapper.queryProcessDefinitionVersionsPaging(page, 1L);
         Assert.assertNotEquals(processDefinitionLogs.getTotal(), 0);
     }
 

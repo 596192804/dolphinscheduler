@@ -22,7 +22,6 @@
                 type="text"
                 size="small"
                 v-model="name"
-                id="inputName"
                 :disabled="router.history.current.name === 'projects-instance-details'"
                 :placeholder="$t('Please enter name (required)')">
         </el-input>
@@ -58,23 +57,7 @@
           </el-input>
         </span>
       </div>
-      <div class="title" style="padding-top: 6px;">
-        <span class="text-b">{{$t('Process execute type')}}</span>
-        <span >
-          <el-select
-            :disabled="isDetails"
-            v-model="executionType"
-            size="small"
-            style="width: 180px">
-            <el-option
-                    v-for="item in itemsList"
-                    :key="item.key"
-                    :value="item.key"
-                    :label="$t(item.val)">
-            </el-option>
-          </el-select>
-        </span>
-      </div>
+
       <div class="title" style="padding-top: 6px;">
         <span>{{$t('Set global')}}</span>
       </div>
@@ -102,7 +85,7 @@
           </div>
         </template>
         <el-button type="text" size="small" @click="close()"> {{$t('Cancel')}} </el-button>
-        <el-button type="primary" size="small" round :disabled="isDetails" @click="ok()" id="btnSubmit">{{$t('Add')}}</el-button>
+        <el-button type="primary" size="small" round :disabled="isDetails" @click="ok()">{{$t('Add')}}</el-button>
       </div>
     </div>
   </div>
@@ -137,15 +120,7 @@
         // tenant code
         tenantCode: 'default',
         // checked Timeout alarm
-        checkedTimeout: true,
-        // process execute type
-        executionType: 'PARALLEL',
-        itemsList: [
-          { key: 'PARALLEL', val: 'parallel' },
-          { key: 'SERIAL_WAIT', val: 'Serial wait' },
-          { key: 'SERIAL_DISCARD', val: 'Serial discard' },
-          { key: 'SERIAL_PRIORITY', val: 'Serial priority' }
-        ]
+        checkedTimeout: true
       }
     },
     mixins: [disabledState],
@@ -176,7 +151,6 @@
         this.store.commit('dag/setName', _.cloneDeep(this.name))
         this.store.commit('dag/setTimeout', _.cloneDeep(this.timeout))
         this.store.commit('dag/setTenantCode', _.cloneDeep(this.tenantCode))
-        this.store.commit('dag/setExecutionType', _.cloneDeep(this.executionType))
         this.store.commit('dag/setDesc', _.cloneDeep(this.description))
         this.store.commit('dag/setSyncDefine', this.syncDefine)
         this.store.commit('dag/setReleaseState', this.releaseState)
@@ -289,7 +263,6 @@
           this.tenantCode = this.store.state.user.userInfo.tenantCode || 'default'
         }
       })
-      this.executionType = dag.executionType
     },
     mounted () {},
     components: { FormTenant, mLocalParams }

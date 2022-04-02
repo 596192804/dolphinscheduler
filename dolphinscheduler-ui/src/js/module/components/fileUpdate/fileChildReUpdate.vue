@@ -16,12 +16,11 @@
  */
 <template>
   <m-popup
-    ref="popup"
-    :ok-text="$t('Upload')"
-    :nameText="$t('File Upload')"
-    @ok="_ok"
-    @close="_close"
-    :disabled="progress!==0">
+          ref="popup"
+          :ok-text="$t('Upload')"
+          :nameText="$t('File Upload')"
+          @ok="_ok"
+          :disabled="progress === 0 ? false : true">
     <template slot="content">
       <form name="files" enctype="multipart/form-data" method="post">
         <div class="file-update-model"
@@ -193,7 +192,7 @@
           formData.append('description', this.description)
           formData.append('id', this.id)
           formData.append('type', this.type)
-          io.post('resources/' + this.id, res => {
+          io.post('resources/update', res => {
             this.$message.success(res.msg)
             resolve()
             self.$emit('onUpdate')
@@ -246,9 +245,6 @@
         this.file = file
         this.name = file.name
         this.$refs.file.value = null
-      },
-      _close () {
-        this.$emit('closeChildReUpload')
       }
     },
     mounted () {

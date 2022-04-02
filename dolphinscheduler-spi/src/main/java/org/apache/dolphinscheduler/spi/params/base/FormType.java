@@ -17,13 +17,7 @@
 
 package org.apache.dolphinscheduler.spi.params.base;
 
-import static java.util.stream.Collectors.toMap;
-
-import java.util.Arrays;
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.base.Functions;
 
 public enum FormType {
 
@@ -41,9 +35,7 @@ public enum FormType {
     CASCADER("cascader"),
     UPLOAD("upload"),
     ELTRANSFER("el-transfer"),
-    TREE("tree"),
-    TEXTAREA("textarea"),
-    GROUP("group");
+    TREE("tree");
 
     private String formType;
 
@@ -54,15 +46,5 @@ public enum FormType {
     @JsonValue
     public String getFormType() {
         return this.formType;
-    }
-
-    private static final Map<String, FormType> FORM_TYPE_MAP =
-            Arrays.stream(FormType.values()).collect(toMap(FormType::getFormType, Functions.identity()));
-
-    public static FormType of(String type) {
-        if (FORM_TYPE_MAP.containsKey(type)) {
-            return FORM_TYPE_MAP.get(type);
-        }
-        return null;
     }
 }

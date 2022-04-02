@@ -25,6 +25,7 @@ import org.apache.dolphinscheduler.api.utils.Result;
 import org.apache.dolphinscheduler.common.Constants;
 import org.apache.dolphinscheduler.common.utils.CodeGenerateUtils;
 import org.apache.dolphinscheduler.common.utils.CodeGenerateUtils.CodeGenerateException;
+import org.apache.dolphinscheduler.common.utils.CollectionUtils;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
 import org.apache.dolphinscheduler.dao.entity.Environment;
 import org.apache.dolphinscheduler.dao.entity.EnvironmentWorkerGroupRelation;
@@ -34,7 +35,6 @@ import org.apache.dolphinscheduler.dao.mapper.EnvironmentMapper;
 import org.apache.dolphinscheduler.dao.mapper.EnvironmentWorkerGroupRelationMapper;
 import org.apache.dolphinscheduler.dao.mapper.TaskDefinitionMapper;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -367,18 +367,17 @@ public class EnvironmentServiceImpl extends BaseServiceImpl implements Environme
         env.setOperator(loginUser.getId());
         env.setUpdateTime(new Date());
 
-        int update = environmentMapper.update(env, new UpdateWrapper<Environment>().lambda().eq(Environment::getCode, code));
+        int update = environmentMapper.update(env, new UpdateWrapper<Environment>().lambda().eq(Environment::getCode,code));
         if (update > 0) {
             deleteWorkerGroupSet.stream().forEach(key -> {
-                if (StringUtils.isNotEmpty(key)) {
+                if (!StringUtils.isEmpty(key)) {
                     relationMapper.delete(new QueryWrapper<EnvironmentWorkerGroupRelation>()
                             .lambda()
-                            .eq(EnvironmentWorkerGroupRelation::getEnvironmentCode, code)
-                            .eq(EnvironmentWorkerGroupRelation::getWorkerGroup, key));
+                            .eq(EnvironmentWorkerGroupRelation::getEnvironmentCode,code));
                 }
             });
             addWorkerGroupSet.stream().forEach(key -> {
-                if (StringUtils.isNotEmpty(key)) {
+                if (!StringUtils.isEmpty(key)) {
                     EnvironmentWorkerGroupRelation relation = new EnvironmentWorkerGroupRelation();
                     relation.setEnvironmentCode(code);
                     relation.setWorkerGroup(key);

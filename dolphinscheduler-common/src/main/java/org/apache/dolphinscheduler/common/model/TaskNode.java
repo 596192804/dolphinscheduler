@@ -17,15 +17,12 @@
 
 package org.apache.dolphinscheduler.common.model;
 
-import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.TASK_TYPE_BLOCKING;
-import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.TASK_TYPE_CONDITIONS;
-import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.TASK_TYPE_SWITCH;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.dolphinscheduler.common.Constants;
 import org.apache.dolphinscheduler.common.enums.Priority;
-import org.apache.dolphinscheduler.plugin.task.api.enums.TaskTimeoutStrategy;
-import org.apache.dolphinscheduler.plugin.task.api.parameters.TaskTimeoutParameter;
+import org.apache.dolphinscheduler.common.enums.TaskTimeoutStrategy;
+import org.apache.dolphinscheduler.common.enums.TaskType;
+import org.apache.dolphinscheduler.common.task.TaskTimeoutParameter;
 import org.apache.dolphinscheduler.common.utils.CollectionUtils;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
 
@@ -90,15 +87,6 @@ public class TaskNode {
      * Unit of retry interval: points
      */
     private int retryInterval;
-
-    /**
-     * task group id
-     */
-    private int taskGroupId;
-    /**
-     * task group id
-     */
-    private int taskGroupPriority;
 
     /**
      * params information
@@ -390,19 +378,15 @@ public class TaskNode {
     }
 
     public boolean isConditionsTask() {
-        return TASK_TYPE_CONDITIONS.equalsIgnoreCase(this.getType());
+        return TaskType.CONDITIONS.getDesc().equalsIgnoreCase(this.getType());
     }
 
     public boolean isSwitchTask() {
-        return TASK_TYPE_SWITCH.equalsIgnoreCase(this.getType());
+        return TaskType.SWITCH.toString().equalsIgnoreCase(this.getType());
     }
 
     public List<PreviousTaskNode> getPreTaskNodeList() {
         return preTaskNodeList;
-    }
-
-    public boolean isBlockingTask() {
-        return TASK_TYPE_BLOCKING.equalsIgnoreCase(this.getType());
     }
 
     public void setPreTaskNodeList(List<PreviousTaskNode> preTaskNodeList) {
@@ -480,21 +464,5 @@ public class TaskNode {
 
     public void setWaitStartTimeout(String waitStartTimeout) {
         this.waitStartTimeout = waitStartTimeout;
-    }
-
-    public int getTaskGroupId() {
-        return taskGroupId;
-    }
-
-    public void setTaskGroupId(int taskGroupId) {
-        this.taskGroupId = taskGroupId;
-    }
-
-    public int getTaskGroupPriority() {
-        return taskGroupPriority;
-    }
-
-    public void setTaskGroupPriority(int taskGroupPriority) {
-        this.taskGroupPriority = taskGroupPriority;
     }
 }

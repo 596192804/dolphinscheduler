@@ -147,8 +147,7 @@
       transferApi (api) {
         this.getResourceId({
           type: 'UDF',
-          fullName: api,
-          id: this.searchParams.id
+          fullName: api
         }).then(res => {
           localStore.setItem('currentDir', `${res.fullName}`)
           this.$router.push({ path: `/resource/udf/subUdfDirectory/${res.id}` })

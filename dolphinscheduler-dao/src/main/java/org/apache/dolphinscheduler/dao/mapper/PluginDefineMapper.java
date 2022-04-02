@@ -64,5 +64,5 @@ public interface PluginDefineMapper extends BaseMapper<PluginDefine> {
      * @param pluginType
      * @return
      */
-    PluginDefine queryByNameAndType(@Param("pluginName") String pluginName, @Param("pluginType") String pluginType);
+    List<PluginDefine> queryByNameAndType(@Param("pluginName") String pluginName, @Param("pluginType") String pluginType);
 }

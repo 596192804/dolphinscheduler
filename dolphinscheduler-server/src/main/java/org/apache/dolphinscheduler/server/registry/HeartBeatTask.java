@@ -18,6 +18,7 @@
 package org.apache.dolphinscheduler.server.registry;
 
 import org.apache.dolphinscheduler.common.utils.HeartBeat;
+import org.apache.dolphinscheduler.server.worker.runner.WorkerManagerThread;
 import org.apache.dolphinscheduler.service.registry.RegistryClient;
 
 import java.util.Set;
@@ -32,11 +33,11 @@ public class HeartBeatTask implements Runnable {
 
     private final Logger logger = LoggerFactory.getLogger(HeartBeatTask.class);
 
-    private final Set<String> heartBeatPaths;
-    private final RegistryClient registryClient;
-    private int workerWaitingTaskCount;
-    private final String serverType;
-    private final HeartBeat heartBeat;
+    private Set<String> heartBeatPaths;
+    private RegistryClient registryClient;
+    private WorkerManagerThread workerManagerThread;
+    private String serverType;
+    private HeartBeat heartBeat;
 
     public HeartBeatTask(long startupTime,
                          double maxCpuloadAvg,
@@ -58,11 +59,11 @@ public class HeartBeatTask implements Runnable {
                          String serverType,
                          RegistryClient registryClient,
                          int workerThreadCount,
-                         int workerWaitingTaskCount
+                         WorkerManagerThread workerManagerThread
     ) {
         this.heartBeatPaths = heartBeatPaths;
         this.registryClient = registryClient;
-        this.workerWaitingTaskCount = workerWaitingTaskCount;
+        this.workerManagerThread = workerManagerThread;
         this.serverType = serverType;
         this.heartBeat = new HeartBeat(startupTime, maxCpuloadAvg, reservedMemory, hostWeight, workerThreadCount);
     }
@@ -82,11 +83,13 @@ public class HeartBeatTask implements Runnable {
                 }
             }
 
-            // update waiting task count
-            heartBeat.setWorkerWaitingTaskCount(workerWaitingTaskCount);
+            if (workerManagerThread != null) {
+                // update waiting task count
+                heartBeat.setWorkerWaitingTaskCount(workerManagerThread.getThreadPoolQueueSize());
+            }
 
             for (String heartBeatPath : heartBeatPaths) {
-                registryClient.persistEphemeral(heartBeatPath, heartBeat.encodeHeartBeat());
+                registryClient.update(heartBeatPath, heartBeat.encodeHeartBeat());
             }
         } catch (Throwable ex) {
             logger.error("error write heartbeat info", ex);

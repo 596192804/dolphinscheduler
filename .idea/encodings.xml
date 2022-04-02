@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-alert-plugin/dolphinscheduler-alert-dingtalk/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-alert-plugin/dolphinscheduler-alert-email/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-alert-plugin/dolphinscheduler-alert-feishu/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-alert-plugin/dolphinscheduler-alert-http/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-alert-plugin/dolphinscheduler-alert-script/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-alert-plugin/dolphinscheduler-alert-slack/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-alert-plugin/dolphinscheduler-alert-wechat/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-alert/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-alert/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-api/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-common/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-common/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-dao/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-dao/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-registry-plugin/dolphinscheduler-registry-zookeeper/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-remote/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-server/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-server/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-service/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-spi/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-standalone-server/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-standalone-server/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-task-plugin/dolphinscheduler-task-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-task-plugin/dolphinscheduler-task-datax/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-task-plugin/dolphinscheduler-task-flink/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-task-plugin/dolphinscheduler-task-http/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-task-plugin/dolphinscheduler-task-mr/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-task-plugin/dolphinscheduler-task-pigeon/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-task-plugin/dolphinscheduler-task-pigeon/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-task-plugin/dolphinscheduler-task-procedure/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-task-plugin/dolphinscheduler-task-python/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-task-plugin/dolphinscheduler-task-shell/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-task-plugin/dolphinscheduler-task-spark/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-task-plugin/dolphinscheduler-task-sql/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dolphinscheduler-task-plugin/dolphinscheduler-task-sqoop/src/main/java" charset="UTF-8" />
+  </component>
+</project>

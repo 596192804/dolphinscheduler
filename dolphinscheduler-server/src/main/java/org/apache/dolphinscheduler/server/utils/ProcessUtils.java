@@ -18,20 +18,19 @@
 package org.apache.dolphinscheduler.server.utils;
 
 import org.apache.dolphinscheduler.common.Constants;
+import org.apache.dolphinscheduler.common.enums.ExecutionStatus;
+import org.apache.dolphinscheduler.common.utils.CollectionUtils;
 import org.apache.dolphinscheduler.common.utils.CommonUtils;
 import org.apache.dolphinscheduler.common.utils.FileUtils;
 import org.apache.dolphinscheduler.common.utils.HadoopUtils;
 import org.apache.dolphinscheduler.common.utils.LoggerUtils;
 import org.apache.dolphinscheduler.common.utils.OSUtils;
 import org.apache.dolphinscheduler.common.utils.PropertyUtils;
-import org.apache.dolphinscheduler.plugin.task.api.TaskExecutionContext;
-import org.apache.dolphinscheduler.plugin.task.api.enums.ExecutionStatus;
 import org.apache.dolphinscheduler.remote.utils.Host;
 import org.apache.dolphinscheduler.service.log.LogClientService;
+import org.apache.dolphinscheduler.service.queue.entity.TaskExecutionContext;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -154,7 +153,7 @@ public class ProcessUtils {
         List<String> pidList = new ArrayList<>();
         Matcher mat = null;
         // pstree pid get sub pids
-        if (SystemUtils.IS_OS_MAC) {
+        if (OSUtils.isMacOS()) {
             String pids = OSUtils.exeCmd(String.format("%s -sp %d", Constants.PSTREE, processId));
             if (null != pids) {
                 mat = MACPATTERN.matcher(pids);
@@ -187,8 +186,9 @@ public class ProcessUtils {
             Thread.sleep(Constants.SLEEP_TIME_MILLIS);
             String log;
             try (LogClientService logClient = new LogClientService()) {
-                Host host = Host.of(taskExecutionContext.getHost());
-                log = logClient.viewLog(host.getIp(), host.getPort(), taskExecutionContext.getLogPath());
+                log = logClient.viewLog(Host.of(taskExecutionContext.getHost()).getIp(),
+                        Constants.RPC_PORT,
+                        taskExecutionContext.getLogPath());
             }
             if (!StringUtils.isEmpty(log)) {
                 if (StringUtils.isEmpty(taskExecutionContext.getExecutePath())) {

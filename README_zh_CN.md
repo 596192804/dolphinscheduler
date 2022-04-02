@@ -20,7 +20,7 @@ Dolphin Scheduler Official Website
 其主要目标如下：
 
  - 以DAG图的方式将Task按照任务的依赖关系关联起来，可实时可视化监控任务的运行状态
- - 支持丰富的任务类型：Shell、MR、Spark、SQL(mysql、postgresql、hive、sparksql)、Python、Sub_Process、Procedure等
+ - 支持丰富的任务类型：Shell、MR、Spark、SQL(mysql、postgresql、hive、sparksql),Python,Sub_Process、Procedure等
  - 支持工作流定时调度、依赖调度、手动调度、手动暂停/停止/恢复，同时支持失败重试/告警、从指定节点恢复失败、Kill任务等操作
  - 支持工作流优先级、任务优先级及任务的故障转移及任务超时告警/失败
  - 支持工作流全局参数及节点自定义参数设置
@@ -61,11 +61,11 @@ DolphinScheduler的工作计划：<a href="https://github.com/apache/dolphinsche
 
 ## 快速试用 Docker
 
-请参考官方文档: [快速试用 Docker 部署](http://dolphinscheduler.apache.org/zh-cn/docs/latest/user_doc/guide/installation/docker.html)
+请参考官方文档: [快速试用 Docker 部署](https://dolphinscheduler.apache.org/zh-cn/docs/latest/user_doc/docker-deployment.html)
 
 ## 快速试用 Kubernetes
 
-请参考官方文档: [快速试用 Kubernetes 部署](http://dolphinscheduler.apache.org/zh-cn/docs/latest/user_doc/guide/installation/kubernetes.html)
+请参考官方文档: [快速试用 Kubernetes 部署](https://dolphinscheduler.apache.org/zh-cn/docs/latest/user_doc/kubernetes-deployment.html)
 
 ## 如何构建
 

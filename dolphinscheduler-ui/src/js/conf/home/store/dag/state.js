@@ -37,8 +37,6 @@ export default {
   tasks: [],
   // Timeout alarm
   timeout: 0,
-  // process execute type
-  executionType: 'PARALLEL',
   // tenant code
   tenantCode: 'default',
   // Node location information
@@ -113,11 +111,6 @@ export default {
       id: 8,
       code: 'PRESTO',
       disabled: false
-    },
-    {
-      id: 9,
-      code: 'REDSHIFT',
-      disabled: false
     }
   ],
   // Alarm interface
@@ -127,6 +120,5 @@ export default {
   // Operating state
   isDetails: false,
   startup: {},
-  taskInstances: [],
-  dependResult: {}
+  taskInstances: []
 }

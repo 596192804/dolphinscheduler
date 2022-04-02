@@ -20,15 +20,18 @@ package org.apache.dolphinscheduler.api;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletComponentScan;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 
-@ServletComponentScan
 @SpringBootApplication
-@ComponentScan("org.apache.dolphinscheduler")
-public class ApiApplicationServer {
+@ServletComponentScan
+@ComponentScan(value = "org.apache.dolphinscheduler",
+        excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = "org.apache.dolphinscheduler.server.*"))
+public class ApiApplicationServer extends SpringBootServletInitializer {
 
     public static void main(String[] args) {
-        SpringApplication.run(ApiApplicationServer.class);
+        SpringApplication.run(ApiApplicationServer.class, args);
     }
 
 }

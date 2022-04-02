@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="dolphinscheduler-alert-script" />
+        <module name="dolphinscheduler-service" />
+        <module name="dolphinscheduler-alert-feishu" />
+        <module name="dolphinscheduler-standalone-server" />
+        <module name="dolphinscheduler-api" />
+        <module name="dolphinscheduler-alert-http" />
+        <module name="dolphinscheduler-task-datax" />
+        <module name="dolphinscheduler-dao" />
+        <module name="dolphinscheduler-task-spark" />
+        <module name="dolphinscheduler-task-shell" />
+        <module name="dolphinscheduler-common" />
+        <module name="dolphinscheduler-alert-wechat" />
+        <module name="dolphinscheduler-spi" />
+        <module name="dolphinscheduler-task-sqoop" />
+        <module name="dolphinscheduler-task-procedure" />
+        <module name="dolphinscheduler-task-flink" />
+        <module name="dolphinscheduler-task-mr" />
+        <module name="dolphinscheduler-task-sql" />
+        <module name="dolphinscheduler-task-http" />
+        <module name="dolphinscheduler-remote" />
+        <module name="dolphinscheduler-alert-dingtalk" />
+        <module name="dolphinscheduler-task-python" />
+        <module name="dolphinscheduler-task-pigeon" />
+        <module name="dolphinscheduler-alert-email" />
+        <module name="dolphinscheduler-task-api" />
+        <module name="dolphinscheduler-registry-zookeeper" />
+        <module name="dolphinscheduler-alert" />
+        <module name="dolphinscheduler-alert-slack" />
+        <module name="dolphinscheduler-dist" />
+        <module name="dolphinscheduler-server" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="dolphinscheduler" target="1.8" />
+      <module name="dolphinscheduler-alert" target="1.8" />
+      <module name="dolphinscheduler-alert-dingtalk" target="1.8" />
+      <module name="dolphinscheduler-alert-email" target="1.8" />
+      <module name="dolphinscheduler-alert-feishu" target="1.8" />
+      <module name="dolphinscheduler-alert-http" target="1.8" />
+      <module name="dolphinscheduler-alert-plugin" target="1.8" />
+      <module name="dolphinscheduler-alert-script" target="1.8" />
+      <module name="dolphinscheduler-alert-slack" target="1.8" />
+      <module name="dolphinscheduler-alert-wechat" target="1.8" />
+      <module name="dolphinscheduler-api" target="1.8" />
+      <module name="dolphinscheduler-common" target="1.8" />
+      <module name="dolphinscheduler-dao" target="1.8" />
+      <module name="dolphinscheduler-dist" target="1.8" />
+      <module name="dolphinscheduler-registry-plugin" target="1.8" />
+      <module name="dolphinscheduler-registry-zookeeper" target="1.8" />
+      <module name="dolphinscheduler-remote" target="1.8" />
+      <module name="dolphinscheduler-server" target="1.8" />
+      <module name="dolphinscheduler-service" target="1.8" />
+      <module name="dolphinscheduler-spi" target="1.8" />
+      <module name="dolphinscheduler-standalone-server" target="1.8" />
+      <module name="dolphinscheduler-task-api" target="1.8" />
+      <module name="dolphinscheduler-task-datax" target="1.8" />
+      <module name="dolphinscheduler-task-flink" target="1.8" />
+      <module name="dolphinscheduler-task-http" target="1.8" />
+      <module name="dolphinscheduler-task-mr" target="1.8" />
+      <module name="dolphinscheduler-task-pigeon" target="1.8" />
+      <module name="dolphinscheduler-task-plugin" target="1.8" />
+      <module name="dolphinscheduler-task-procedure" target="1.8" />
+      <module name="dolphinscheduler-task-python" target="1.8" />
+      <module name="dolphinscheduler-task-shell" target="1.8" />
+      <module name="dolphinscheduler-task-spark" target="1.8" />
+      <module name="dolphinscheduler-task-sql" target="1.8" />
+      <module name="dolphinscheduler-task-sqoop" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

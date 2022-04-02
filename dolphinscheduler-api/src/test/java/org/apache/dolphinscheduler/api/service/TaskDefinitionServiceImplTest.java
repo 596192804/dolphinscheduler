@@ -21,8 +21,8 @@ import org.apache.dolphinscheduler.api.enums.Status;
 import org.apache.dolphinscheduler.api.service.impl.ProjectServiceImpl;
 import org.apache.dolphinscheduler.api.service.impl.TaskDefinitionServiceImpl;
 import org.apache.dolphinscheduler.common.Constants;
-import org.apache.dolphinscheduler.common.enums.ReleaseState;
 import org.apache.dolphinscheduler.common.enums.UserType;
+import org.apache.dolphinscheduler.common.task.shell.ShellParameters;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
 import org.apache.dolphinscheduler.dao.entity.Project;
 import org.apache.dolphinscheduler.dao.entity.TaskDefinition;
@@ -32,9 +32,7 @@ import org.apache.dolphinscheduler.dao.mapper.ProcessTaskRelationMapper;
 import org.apache.dolphinscheduler.dao.mapper.ProjectMapper;
 import org.apache.dolphinscheduler.dao.mapper.TaskDefinitionLogMapper;
 import org.apache.dolphinscheduler.dao.mapper.TaskDefinitionMapper;
-import org.apache.dolphinscheduler.plugin.task.shell.ShellParameters;
 import org.apache.dolphinscheduler.service.process.ProcessService;
-import org.apache.dolphinscheduler.service.task.TaskPluginManager;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -73,9 +71,7 @@ public class TaskDefinitionServiceImplTest {
 
     @Mock
     private ProcessTaskRelationMapper processTaskRelationMapper;
-
-    @Mock
-    private TaskPluginManager taskPluginManager;
+    ;
 
     @Test
     public void createTaskDefinition() {
@@ -100,8 +96,7 @@ public class TaskDefinitionServiceImplTest {
             + "\"workerGroup\":\"default\",\"failRetryTimes\":0,\"failRetryInterval\":0,\"timeoutFlag\":0,"
             + "\"timeoutNotifyStrategy\":0,\"timeout\":0,\"delayTime\":0,\"resourceIds\":\"\"}]";
         List<TaskDefinitionLog> taskDefinitions = JSONUtils.toList(createTaskDefinitionJson, TaskDefinitionLog.class);
-        Mockito.when(processService.saveTaskDefine(loginUser, projectCode, taskDefinitions, Boolean.TRUE)).thenReturn(1);
-        Mockito.when(taskPluginManager.checkTaskParameters(Mockito.any())).thenReturn(true);
+        Mockito.when(processService.saveTaskDefine(loginUser, projectCode, taskDefinitions)).thenReturn(1);
         Map<String, Object> relation = taskDefinitionService
             .createTaskDefinition(loginUser, projectCode, createTaskDefinitionJson);
         Assert.assertEquals(Status.SUCCESS, relation.get(Constants.STATUS));
@@ -136,7 +131,6 @@ public class TaskDefinitionServiceImplTest {
         Mockito.when(taskDefinitionMapper.updateById(Mockito.any(TaskDefinitionLog.class))).thenReturn(1);
         Mockito.when(taskDefinitionLogMapper.insert(Mockito.any(TaskDefinitionLog.class))).thenReturn(1);
         Mockito.when(taskDefinitionLogMapper.queryMaxVersionForDefinition(taskCode)).thenReturn(1);
-        Mockito.when(taskPluginManager.checkTaskParameters(Mockito.any())).thenReturn(true);
         result = taskDefinitionService.updateTaskDefinition(loginUser, projectCode, taskCode, taskDefinitionJson);
         Assert.assertEquals(Status.SUCCESS, result.get(Constants.STATUS));
     }
@@ -169,7 +163,6 @@ public class TaskDefinitionServiceImplTest {
     @Test
     public void deleteTaskDefinitionByCode() {
         long projectCode = 1L;
-        long taskCode = 1L;
 
         Project project = getProject(projectCode);
         Mockito.when(projectMapper.queryByCode(projectCode)).thenReturn(project);
@@ -181,14 +174,13 @@ public class TaskDefinitionServiceImplTest {
         Map<String, Object> result = new HashMap<>();
         putMsg(result, Status.SUCCESS, projectCode);
         Mockito.when(projectService.checkProjectAndAuth(loginUser, project, projectCode)).thenReturn(result);
-        Mockito.when(taskDefinitionMapper.queryByCode(taskCode)).thenReturn(getTaskDefinition());
-        Mockito.when(processTaskRelationMapper.queryDownstreamByTaskCode(taskCode))
+        Mockito.when(processTaskRelationMapper.queryByTaskCode(Mockito.anyLong()))
             .thenReturn(new ArrayList<>());
-        Mockito.when(taskDefinitionMapper.deleteByCode(taskCode))
+        Mockito.when(taskDefinitionMapper.deleteByCode(Mockito.anyLong()))
             .thenReturn(1);
 
         Map<String, Object> relation = taskDefinitionService
-            .deleteTaskDefinitionByCode(loginUser, projectCode, taskCode);
+            .deleteTaskDefinitionByCode(loginUser, projectCode, Mockito.anyLong());
 
         Assert.assertEquals(Status.SUCCESS, relation.get(Constants.STATUS));
     }
@@ -212,10 +204,9 @@ public class TaskDefinitionServiceImplTest {
 
         Mockito.when(taskDefinitionLogMapper.queryByDefinitionCodeAndVersion(taskCode, version))
             .thenReturn(new TaskDefinitionLog());
-        TaskDefinition taskDefinition = new TaskDefinition();
-        taskDefinition.setProjectCode(projectCode);
+
         Mockito.when(taskDefinitionMapper.queryByCode(taskCode))
-            .thenReturn(taskDefinition);
+            .thenReturn(new TaskDefinition());
         Mockito.when(taskDefinitionMapper.updateById(new TaskDefinitionLog())).thenReturn(1);
         Map<String, Object> relation = taskDefinitionService
             .switchVersion(loginUser, projectCode, taskCode, version);
@@ -245,15 +236,6 @@ public class TaskDefinitionServiceImplTest {
         project.setName("test");
         project.setUserId(1);
         return project;
-    }
-
-    private TaskDefinition getTaskDefinition() {
-        TaskDefinition taskDefinition = new TaskDefinition();
-        taskDefinition.setProjectCode(1L);
-        taskDefinition.setCode(1L);
-        taskDefinition.setVersion(1);
-        taskDefinition.setTaskType("SHELL");
-        return taskDefinition;
     }
 
     @Test
@@ -290,47 +272,5 @@ public class TaskDefinitionServiceImplTest {
     public void genTaskCodeList() {
         Map<String, Object> genTaskCodeList = taskDefinitionService.genTaskCodeList(10);
         Assert.assertEquals(Status.SUCCESS, genTaskCodeList.get(Constants.STATUS));
-    }
-
-    @Test
-    public void testReleaseTaskDefinition() {
-        long projectCode = 1L;
-        long taskCode = 1L;
-        Mockito.when(projectMapper.queryByCode(projectCode)).thenReturn(getProject(projectCode));
-
-        Project project = getProject(projectCode);
-        User loginUser = new User();
-        loginUser.setId(1);
-        loginUser.setUserType(UserType.GENERAL_USER);
-
-        // check task dose not exist
-        Map<String, Object> result = new HashMap<>();
-        putMsg(result, Status.TASK_DEFINE_NOT_EXIST, taskCode);
-        Mockito.when(projectService.checkProjectAndAuth(loginUser, project, projectCode)).thenReturn(result);
-        Map<String, Object> map = taskDefinitionService.releaseTaskDefinition(loginUser, projectCode, taskCode, ReleaseState.OFFLINE);
-        Assert.assertEquals(Status.TASK_DEFINE_NOT_EXIST, map.get(Constants.STATUS));
-
-        // process definition offline
-        putMsg(result, Status.SUCCESS);
-        TaskDefinition taskDefinition = new TaskDefinition();
-        taskDefinition.setProjectCode(projectCode);
-        taskDefinition.setVersion(1);
-        taskDefinition.setCode(taskCode);
-        String params = "{\"resourceList\":[],\"localParams\":[],\"rawScript\":\"echo 1\",\"conditionResult\":{\"successNode\":[\"\"],\"failedNode\":[\"\"]},\"dependence\":{}}";
-        taskDefinition.setTaskParams(params);
-        taskDefinition.setTaskType("SHELL");
-        Mockito.when(taskDefinitionMapper.queryByCode(taskCode)).thenReturn(taskDefinition);
-        TaskDefinitionLog taskDefinitionLog = new TaskDefinitionLog(taskDefinition);
-        Mockito.when(taskDefinitionLogMapper.queryByDefinitionCodeAndVersion(taskCode, taskDefinition.getVersion())).thenReturn(taskDefinitionLog);
-        Map<String, Object> offlineTaskResult = taskDefinitionService.releaseTaskDefinition(loginUser, projectCode, taskCode, ReleaseState.OFFLINE);
-        Assert.assertEquals(Status.SUCCESS, offlineTaskResult.get(Constants.STATUS));
-
-        // process definition online, resource exist
-        Map<String, Object> onlineTaskResult = taskDefinitionService.releaseTaskDefinition(loginUser, projectCode, taskCode, ReleaseState.ONLINE);
-        Assert.assertEquals(Status.SUCCESS, onlineTaskResult.get(Constants.STATUS));
-
-        // release error code
-        Map<String, Object> failResult = taskDefinitionService.releaseTaskDefinition(loginUser, projectCode, taskCode, ReleaseState.getEnum(2));
-        Assert.assertEquals(Status.REQUEST_PARAMS_NOT_VALID_ERROR, failResult.get(Constants.STATUS));
     }
 }

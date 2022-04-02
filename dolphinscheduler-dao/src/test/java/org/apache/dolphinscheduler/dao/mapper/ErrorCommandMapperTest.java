@@ -14,11 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dolphinscheduler.dao.mapper;
 
+
 import org.apache.dolphinscheduler.common.enums.CommandType;
-import org.apache.dolphinscheduler.dao.BaseDaoTest;
 import org.apache.dolphinscheduler.dao.entity.CommandCount;
 import org.apache.dolphinscheduler.dao.entity.ErrorCommand;
 import org.apache.dolphinscheduler.dao.entity.ProcessDefinition;
@@ -28,21 +27,31 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
-public class ErrorCommandMapperTest extends BaseDaoTest {
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@Transactional
+@Rollback(true)
+public class ErrorCommandMapperTest {
 
     @Autowired
-    private ErrorCommandMapper errorCommandMapper;
+    ErrorCommandMapper errorCommandMapper;
 
     @Autowired
-    private ProcessDefinitionMapper processDefinitionMapper;
+    ProcessDefinitionMapper processDefinitionMapper;
+
 
     /**
      * insert
      * @return ErrorCommand
      */
-    private ErrorCommand insertOne() {
+    private ErrorCommand insertOne(){
         //insertOne
         ErrorCommand errorCommand = new ErrorCommand();
         errorCommand.setId(10101);
@@ -75,6 +84,7 @@ public class ErrorCommandMapperTest extends BaseDaoTest {
 
         errorCommand.setProcessDefinitionCode(processDefinition.getCode());
         errorCommandMapper.updateById(errorCommand);
+
 
         List<CommandCount> commandCounts = errorCommandMapper.countCommandState(
                 null,

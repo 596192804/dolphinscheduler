@@ -18,13 +18,13 @@
 package org.apache.dolphinscheduler.plugin.task.spark;
 
 import org.apache.dolphinscheduler.plugin.task.api.AbstractYarnTask;
-import org.apache.dolphinscheduler.plugin.task.api.TaskExecutionContext;
-import org.apache.dolphinscheduler.plugin.task.api.model.Property;
-import org.apache.dolphinscheduler.plugin.task.api.model.ResourceInfo;
-import org.apache.dolphinscheduler.plugin.task.api.parameters.AbstractParameters;
-import org.apache.dolphinscheduler.plugin.task.api.parser.ParamUtils;
-import org.apache.dolphinscheduler.plugin.task.api.parser.ParameterUtils;
-import org.apache.dolphinscheduler.plugin.task.api.utils.MapUtils;
+import org.apache.dolphinscheduler.plugin.task.util.MapUtils;
+import org.apache.dolphinscheduler.spi.task.AbstractParameters;
+import org.apache.dolphinscheduler.spi.task.Property;
+import org.apache.dolphinscheduler.spi.task.ResourceInfo;
+import org.apache.dolphinscheduler.spi.task.paramparser.ParamUtils;
+import org.apache.dolphinscheduler.spi.task.paramparser.ParameterUtils;
+import org.apache.dolphinscheduler.spi.task.request.TaskRequest;
 import org.apache.dolphinscheduler.spi.utils.JSONUtils;
 
 import java.util.ArrayList;
@@ -35,6 +35,18 @@ import java.util.Map;
 public class SparkTask extends AbstractYarnTask {
 
     /**
+     * spark1 command
+     * usage: spark-submit [options] <app jar | python file> [app arguments]
+     */
+    private static final String SPARK1_COMMAND = "${SPARK_HOME1}/bin/spark-submit";
+
+    /**
+     * spark2 command
+     * usage: spark-submit [options] <app jar | python file> [app arguments]
+     */
+    private static final String SPARK2_COMMAND = "${SPARK_HOME2}/bin/spark-submit";
+
+    /**
      * spark parameters
      */
     private SparkParameters sparkParameters;
@@ -42,9 +54,9 @@ public class SparkTask extends AbstractYarnTask {
     /**
      * taskExecutionContext
      */
-    private TaskExecutionContext taskExecutionContext;
+    private TaskRequest taskExecutionContext;
 
-    public SparkTask(TaskExecutionContext taskExecutionContext) {
+    public SparkTask(TaskRequest taskExecutionContext) {
         super(taskExecutionContext);
         this.taskExecutionContext = taskExecutionContext;
     }
@@ -78,10 +90,10 @@ public class SparkTask extends AbstractYarnTask {
         List<String> args = new ArrayList<>();
 
         // spark version
-        String sparkCommand = SparkVersion.SPARK2.getCommand();
+        String sparkCommand = SPARK2_COMMAND;
 
         if (SparkVersion.SPARK1.name().equals(sparkParameters.getSparkVersion())) {
-            sparkCommand = SparkVersion.SPARK1.getCommand();
+            sparkCommand = SPARK1_COMMAND;
         }
 
         args.add(sparkCommand);
@@ -109,9 +121,22 @@ public class SparkTask extends AbstractYarnTask {
     protected void setMainJarName() {
         // main jar
         ResourceInfo mainJar = sparkParameters.getMainJar();
-        String resourceName = getResourceNameOfMainJar(mainJar);
+
+        if (null == mainJar) {
+            throw new RuntimeException("Spark task jar params is null");
+        }
+
+        int resourceId = mainJar.getId();
+        String resourceName;
+        if (resourceId == 0) {
+            resourceName = mainJar.getRes();
+        } else {
+            //when update resource maybe has error
+            resourceName = mainJar.getResourceName().replaceFirst("/", "");
+        }
         mainJar.setRes(resourceName);
         sparkParameters.setMainJar(mainJar);
+
     }
 
     @Override

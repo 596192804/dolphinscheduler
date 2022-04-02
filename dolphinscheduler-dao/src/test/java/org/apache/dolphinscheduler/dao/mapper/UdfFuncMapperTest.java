@@ -16,37 +16,46 @@
  */
 package org.apache.dolphinscheduler.dao.mapper;
 
-import static java.util.stream.Collectors.toList;
+
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 import org.apache.dolphinscheduler.common.enums.UdfType;
 import org.apache.dolphinscheduler.common.enums.UserType;
-import org.apache.dolphinscheduler.dao.BaseDaoTest;
 import org.apache.dolphinscheduler.dao.entity.UDFUser;
 import org.apache.dolphinscheduler.dao.entity.UdfFunc;
 import org.apache.dolphinscheduler.dao.entity.User;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import static java.util.stream.Collectors.toList;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-
-public class UdfFuncMapperTest extends BaseDaoTest {
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@Transactional
+@Rollback(true)
+public class UdfFuncMapperTest {
 
     @Autowired
     private UserMapper userMapper;
 
     @Autowired
-    private UdfFuncMapper udfFuncMapper;
+    UdfFuncMapper udfFuncMapper;
 
     @Autowired
-    private UDFUserMapper udfUserMapper;
+    UDFUserMapper udfUserMapper;
 
     /**
      * insert one udf
@@ -195,7 +204,7 @@ public class UdfFuncMapperTest extends BaseDaoTest {
         UdfFunc udfFunc = insertOne();
         //insertOne
         UdfFunc udfFunc1 = insertOne();
-        Integer[] idArray = new Integer[]{udfFunc.getId(), udfFunc1.getId()};
+        int[] idArray = new int[]{udfFunc.getId(), udfFunc1.getId()};
         //queryUdfByIdStr
         List<UdfFunc> udfFuncList = udfFuncMapper.queryUdfByIdStr(idArray, "");
         Assert.assertNotEquals(udfFuncList.size(), 0);

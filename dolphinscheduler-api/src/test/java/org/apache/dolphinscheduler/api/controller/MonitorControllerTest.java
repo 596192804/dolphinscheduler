@@ -36,16 +36,17 @@ import org.springframework.test.web.servlet.MvcResult;
  * monitor controller test
  */
 public class MonitorControllerTest extends AbstractControllerTest {
+
     private static final Logger logger = LoggerFactory.getLogger(MonitorControllerTest.class);
 
     @Test
     public void testListMaster() throws Exception {
 
-        MvcResult mvcResult = mockMvc.perform(get("/monitor/masters")
+        MvcResult mvcResult = mockMvc.perform(get("/monitor/master/list")
             .header(SESSION_ID, sessionId)
            /* .param("type", ResourceType.FILE.name())*/)
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
             .andReturn();
 
         Result result = JSONUtils.parseObject(mvcResult.getResponse().getContentAsString(), Result.class);
@@ -58,11 +59,11 @@ public class MonitorControllerTest extends AbstractControllerTest {
     @Test
     public void testListWorker() throws Exception {
 
-        MvcResult mvcResult = mockMvc.perform(get("/monitor/workers")
+        MvcResult mvcResult = mockMvc.perform(get("/monitor/worker/list")
             .header(SESSION_ID, sessionId)
            /* .param("type", ResourceType.FILE.name())*/)
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
             .andReturn();
 
         Result result = JSONUtils.parseObject(mvcResult.getResponse().getContentAsString(), Result.class);
@@ -78,7 +79,7 @@ public class MonitorControllerTest extends AbstractControllerTest {
             .header(SESSION_ID, sessionId)
             /* .param("type", ResourceType.FILE.name())*/)
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
             .andReturn();
 
         Result result = JSONUtils.parseObject(mvcResult.getResponse().getContentAsString(), Result.class);
@@ -87,5 +88,4 @@ public class MonitorControllerTest extends AbstractControllerTest {
         Assert.assertEquals(Status.SUCCESS.getCode(),result.getCode().intValue());
         logger.info(mvcResult.getResponse().getContentAsString());
     }
-
 }

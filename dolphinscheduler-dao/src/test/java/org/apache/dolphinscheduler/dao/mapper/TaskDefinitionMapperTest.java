@@ -17,8 +17,9 @@
 
 package org.apache.dolphinscheduler.dao.mapper;
 
-import org.apache.dolphinscheduler.dao.BaseDaoTest;
+import org.apache.dolphinscheduler.common.enums.TaskType;
 import org.apache.dolphinscheduler.dao.entity.DefinitionGroupByUser;
+import org.apache.dolphinscheduler.dao.entity.Project;
 import org.apache.dolphinscheduler.dao.entity.TaskDefinition;
 import org.apache.dolphinscheduler.dao.entity.User;
 
@@ -28,15 +29,27 @@ import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
-public class TaskDefinitionMapperTest extends BaseDaoTest {
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@Transactional
+@Rollback(true)
+public class TaskDefinitionMapperTest {
 
     @Autowired
-    private TaskDefinitionMapper taskDefinitionMapper;
+    TaskDefinitionMapper taskDefinitionMapper;
 
     @Autowired
-    private UserMapper userMapper;
+    UserMapper userMapper;
+
+    @Autowired
+    ProjectMapper projectMapper;
 
     public TaskDefinition insertOne() {
         return insertOne(99);
@@ -47,7 +60,7 @@ public class TaskDefinitionMapperTest extends BaseDaoTest {
         taskDefinition.setCode(888888L);
         taskDefinition.setName("unit-test");
         taskDefinition.setProjectCode(1L);
-        taskDefinition.setTaskType("SHELL");
+        taskDefinition.setTaskType(TaskType.SHELL.getDesc());
         taskDefinition.setUserId(userId);
         taskDefinition.setResourceIds("1");
         taskDefinition.setWorkerGroup("default");

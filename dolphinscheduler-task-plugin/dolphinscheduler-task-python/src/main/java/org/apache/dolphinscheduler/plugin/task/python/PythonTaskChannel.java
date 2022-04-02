@@ -17,12 +17,8 @@
 
 package org.apache.dolphinscheduler.plugin.task.python;
 
-import org.apache.dolphinscheduler.plugin.task.api.TaskChannel;
-import org.apache.dolphinscheduler.plugin.task.api.TaskExecutionContext;
-import org.apache.dolphinscheduler.plugin.task.api.parameters.AbstractParameters;
-import org.apache.dolphinscheduler.plugin.task.api.parameters.ParametersNode;
-import org.apache.dolphinscheduler.plugin.task.api.parameters.resource.ResourceParametersHelper;
-import org.apache.dolphinscheduler.spi.utils.JSONUtils;
+import org.apache.dolphinscheduler.spi.task.TaskChannel;
+import org.apache.dolphinscheduler.spi.task.request.TaskRequest;
 
 public class PythonTaskChannel implements TaskChannel {
     @Override
@@ -31,17 +27,7 @@ public class PythonTaskChannel implements TaskChannel {
     }
 
     @Override
-    public PythonTask createTask(TaskExecutionContext taskRequest) {
+    public PythonTask createTask(TaskRequest taskRequest) {
         return new PythonTask(taskRequest);
-    }
-
-    @Override
-    public AbstractParameters parseParameters(ParametersNode parametersNode) {
-        return JSONUtils.parseObject(parametersNode.getTaskParams(), PythonParameters.class);
-    }
-
-    @Override
-    public ResourceParametersHelper getResources(String parameters) {
-        return null;
     }
 }

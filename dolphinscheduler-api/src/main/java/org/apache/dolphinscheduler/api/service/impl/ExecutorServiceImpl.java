@@ -24,6 +24,7 @@ import static org.apache.dolphinscheduler.common.Constants.CMD_PARAM_START_NODES
 import static org.apache.dolphinscheduler.common.Constants.CMD_PARAM_START_PARAMS;
 import static org.apache.dolphinscheduler.common.Constants.MAX_TASK_TIMEOUT;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.dolphinscheduler.api.enums.ExecuteType;
 import org.apache.dolphinscheduler.api.enums.Status;
 import org.apache.dolphinscheduler.api.service.ExecutorService;
@@ -31,55 +32,46 @@ import org.apache.dolphinscheduler.api.service.MonitorService;
 import org.apache.dolphinscheduler.api.service.ProjectService;
 import org.apache.dolphinscheduler.common.Constants;
 import org.apache.dolphinscheduler.common.enums.CommandType;
-import org.apache.dolphinscheduler.common.enums.ComplementDependentMode;
-import org.apache.dolphinscheduler.common.enums.CycleEnum;
+import org.apache.dolphinscheduler.common.enums.ExecutionStatus;
 import org.apache.dolphinscheduler.common.enums.FailureStrategy;
-import org.apache.dolphinscheduler.common.enums.Flag;
 import org.apache.dolphinscheduler.common.enums.Priority;
 import org.apache.dolphinscheduler.common.enums.ReleaseState;
 import org.apache.dolphinscheduler.common.enums.RunMode;
 import org.apache.dolphinscheduler.common.enums.TaskDependType;
-import org.apache.dolphinscheduler.common.enums.TaskGroupQueueStatus;
 import org.apache.dolphinscheduler.common.enums.WarningType;
 import org.apache.dolphinscheduler.common.model.Server;
+import org.apache.dolphinscheduler.common.utils.CollectionUtils;
 import org.apache.dolphinscheduler.common.utils.DateUtils;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
 import org.apache.dolphinscheduler.dao.entity.Command;
-import org.apache.dolphinscheduler.dao.entity.DependentProcessDefinition;
 import org.apache.dolphinscheduler.dao.entity.ProcessDefinition;
 import org.apache.dolphinscheduler.dao.entity.ProcessInstance;
 import org.apache.dolphinscheduler.dao.entity.Project;
 import org.apache.dolphinscheduler.dao.entity.Schedule;
-import org.apache.dolphinscheduler.dao.entity.TaskGroupQueue;
 import org.apache.dolphinscheduler.dao.entity.Tenant;
 import org.apache.dolphinscheduler.dao.entity.User;
 import org.apache.dolphinscheduler.dao.mapper.ProcessDefinitionMapper;
 import org.apache.dolphinscheduler.dao.mapper.ProcessInstanceMapper;
 import org.apache.dolphinscheduler.dao.mapper.ProjectMapper;
-import org.apache.dolphinscheduler.plugin.task.api.enums.ExecutionStatus;
 import org.apache.dolphinscheduler.remote.command.StateEventChangeCommand;
 import org.apache.dolphinscheduler.remote.processor.StateEventCallbackService;
 import org.apache.dolphinscheduler.service.process.ProcessService;
 import org.apache.dolphinscheduler.service.quartz.cron.CronUtils;
 
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
  * executor service impl
@@ -101,8 +93,10 @@ public class ExecutorServiceImpl extends BaseServiceImpl implements ExecutorServ
     @Autowired
     private MonitorService monitorService;
 
+
     @Autowired
     private ProcessInstanceMapper processInstanceMapper;
+
 
     @Autowired
     private ProcessService processService;
@@ -140,8 +134,7 @@ public class ExecutorServiceImpl extends BaseServiceImpl implements ExecutorServ
                                                    RunMode runMode,
                                                    Priority processInstancePriority, String workerGroup, Long environmentCode,Integer timeout,
                                                    Map<String, String> startParams, Integer expectedParallelismNumber,
-                                                   int dryRun,
-                                                   ComplementDependentMode complementDependentMode) {
+                                                   int dryRun) {
         Project project = projectMapper.queryByCode(projectCode);
         //check user access for project
         Map<String, Object> result = projectService.checkProjectAndAuth(loginUser, project, projectCode);
@@ -156,7 +149,7 @@ public class ExecutorServiceImpl extends BaseServiceImpl implements ExecutorServ
 
         // check process define release state
         ProcessDefinition processDefinition = processDefinitionMapper.queryByCode(processDefinitionCode);
-        result = checkProcessDefinitionValid(projectCode, processDefinition, processDefinitionCode);
+        result = checkProcessDefinitionValid(processDefinition, processDefinitionCode);
         if (result.get(Constants.STATUS) != Status.SUCCESS) {
             return result;
         }
@@ -178,8 +171,7 @@ public class ExecutorServiceImpl extends BaseServiceImpl implements ExecutorServ
          */
         int create = this.createCommand(commandType, processDefinition.getCode(),
                 taskDependType, failureStrategy, startNodeList, cronTime, warningType, loginUser.getId(),
-                warningGroupId, runMode, processInstancePriority, workerGroup, environmentCode, startParams,
-                expectedParallelismNumber, dryRun, complementDependentMode);
+                warningGroupId, runMode, processInstancePriority, workerGroup, environmentCode, startParams, expectedParallelismNumber, dryRun);
 
         if (create > 0) {
             processDefinition.setWarningGroupId(warningGroupId);
@@ -212,15 +204,14 @@ public class ExecutorServiceImpl extends BaseServiceImpl implements ExecutorServ
     /**
      * check whether the process definition can be executed
      *
-     * @param projectCode project code
      * @param processDefinition process definition
      * @param processDefineCode process definition code
      * @return check result code
      */
     @Override
-    public Map<String, Object> checkProcessDefinitionValid(long projectCode, ProcessDefinition processDefinition, long processDefineCode) {
+    public Map<String, Object> checkProcessDefinitionValid(ProcessDefinition processDefinition, long processDefineCode) {
         Map<String, Object> result = new HashMap<>();
-        if (processDefinition == null || projectCode != processDefinition.getProjectCode()) {
+        if (processDefinition == null) {
             // check process definition exists
             putMsg(result, Status.PROCESS_DEFINE_NOT_EXIST, processDefineCode);
         } else if (processDefinition.getReleaseState() != ReleaseState.ONLINE) {
@@ -264,7 +255,7 @@ public class ExecutorServiceImpl extends BaseServiceImpl implements ExecutorServ
         ProcessDefinition processDefinition = processService.findProcessDefinition(processInstance.getProcessDefinitionCode(),
                 processInstance.getProcessDefinitionVersion());
         if (executeType != ExecuteType.STOP && executeType != ExecuteType.PAUSE) {
-            result = checkProcessDefinitionValid(projectCode, processDefinition, processInstance.getProcessDefinitionCode());
+            result = checkProcessDefinitionValid(processDefinition, processInstance.getProcessDefinitionCode());
             if (result.get(Constants.STATUS) != Status.SUCCESS) {
                 return result;
             }
@@ -413,27 +404,6 @@ public class ExecutorServiceImpl extends BaseServiceImpl implements ExecutorServ
     }
 
     /**
-     * prepare to update process instance command type and status
-     *
-     * @param processInstance process instance
-     * @return update result
-     */
-    private Map<String, Object> forceStartTaskInstance(ProcessInstance processInstance, int taskId) {
-        Map<String, Object> result = new HashMap<>();
-        TaskGroupQueue taskGroupQueue = processService.loadTaskGroupQueue(taskId);
-        if (taskGroupQueue.getStatus() != TaskGroupQueueStatus.WAIT_QUEUE) {
-            putMsg(result, Status.TASK_GROUP_QUEUE_ALREADY_START);
-            return result;
-        }
-        taskGroupQueue.setForceStart(Flag.YES.getCode());
-        processService.updateTaskGroupQueue(taskGroupQueue);
-        processService.sendStartTask2Master(processInstance,taskId
-                ,org.apache.dolphinscheduler.remote.command.CommandType.TASK_FORCE_STATE_EVENT_REQUEST);
-        putMsg(result, Status.SUCCESS);
-        return result;
-    }
-
-    /**
      * insert command, used in the implementation of the page, re run, recovery (pause / failure) execution
      *
      * @param loginUser           login user
@@ -540,7 +510,7 @@ public class ExecutorServiceImpl extends BaseServiceImpl implements ExecutorServ
                               String startNodeList, String schedule, WarningType warningType,
                               int executorId, int warningGroupId,
                               RunMode runMode, Priority processInstancePriority, String workerGroup, Long environmentCode,
-                              Map<String, String> startParams, Integer expectedParallelismNumber, int dryRun, ComplementDependentMode complementDependentMode) {
+                              Map<String, String> startParams, Integer expectedParallelismNumber, int dryRun) {
 
         /**
          * instantiate command schedule instance
@@ -603,7 +573,7 @@ public class ExecutorServiceImpl extends BaseServiceImpl implements ExecutorServ
             if (start == null || end == null) {
                 return 0;
             }
-            return createComplementCommandList(start, end, runMode, command, expectedParallelismNumber, complementDependentMode);
+            return createComplementCommandList(start, end, runMode, command, expectedParallelismNumber);
         } else {
             command.setCommandParam(JSONUtils.toJsonString(cmdParam));
             return processService.createCommand(command);
@@ -612,92 +582,48 @@ public class ExecutorServiceImpl extends BaseServiceImpl implements ExecutorServ
 
     /**
      * create complement command
-     * close left and close right
+     * close left open right
      *
      * @param start
      * @param end
      * @param runMode
      * @return
      */
-    private int createComplementCommandList(Date start, Date end, RunMode runMode, Command command,
-                                            Integer expectedParallelismNumber, ComplementDependentMode complementDependentMode) {
+    private int createComplementCommandList(Date start, Date end, RunMode runMode, Command command, Integer expectedParallelismNumber) {
         int createCount = 0;
-        int dependentProcessDefinitionCreateCount = 0;
-
         runMode = (runMode == null) ? RunMode.RUN_MODE_SERIAL : runMode;
         Map<String, String> cmdParam = JSONUtils.toMap(command.getCommandParam());
         switch (runMode) {
             case RUN_MODE_SERIAL: {
-                if (start.after(end)) {
-                    logger.warn("The startDate {} is later than the endDate {}", start, end);
-                    break;
-                }
                 cmdParam.put(CMDPARAM_COMPLEMENT_DATA_START_DATE, DateUtils.dateToString(start));
                 cmdParam.put(CMDPARAM_COMPLEMENT_DATA_END_DATE, DateUtils.dateToString(end));
                 command.setCommandParam(JSONUtils.toJsonString(cmdParam));
                 createCount = processService.createCommand(command);
-
-                // dependent process definition
-                List<Schedule> schedules = processService.queryReleaseSchedulerListByProcessDefinitionCode(command.getProcessDefinitionCode());
-
-                if (schedules.isEmpty() || complementDependentMode == ComplementDependentMode.OFF_MODE) {
-                    logger.info("process code: {} complement dependent in off mode or schedule's size is 0, skip "
-                            + "dependent complement data", command.getProcessDefinitionCode());
-                } else {
-                    dependentProcessDefinitionCreateCount += createComplementDependentCommand(schedules, command);
-                }
-
                 break;
             }
             case RUN_MODE_PARALLEL: {
-                if (start.after(end)) {
-                    logger.warn("The startDate {} is later than the endDate {}", start, end);
-                    break;
-                }
-
-                List<Date> listDate = new ArrayList<>();
+                LinkedList<Date> listDate = new LinkedList<>();
                 List<Schedule> schedules = processService.queryReleaseSchedulerListByProcessDefinitionCode(command.getProcessDefinitionCode());
                 listDate.addAll(CronUtils.getSelfFireDateList(start, end, schedules));
-                int listDateSize = listDate.size();
                 createCount = listDate.size();
                 if (!CollectionUtils.isEmpty(listDate)) {
                     if (expectedParallelismNumber != null && expectedParallelismNumber != 0) {
                         createCount = Math.min(listDate.size(), expectedParallelismNumber);
-                        if (listDateSize < createCount) {
-                            createCount = listDateSize;
-                        }
                     }
                     logger.info("In parallel mode, current expectedParallelismNumber:{}", createCount);
-                    
-                    // Distribute the number of tasks equally to each command.
-                    // The last command with insufficient quantity will be assigned to the remaining tasks.
-                    int itemsPerCommand = (listDateSize / createCount);
-                    int remainingItems = (listDateSize % createCount);
-                    int startDateIndex = 0;
-                    int endDateIndex = 0;
 
-                    for (int i = 1; i <= createCount; i++) {
-                        int extra = (i <= remainingItems) ? 1 : 0;
-                        int singleCommandItems = (itemsPerCommand + extra);
+                    listDate.addLast(end);
+                    int chunkSize = listDate.size() / createCount;
 
-                        if (i == 1) {
-                            endDateIndex += singleCommandItems - 1;
-                        } else {
-                            startDateIndex = endDateIndex + 1;
-                            endDateIndex += singleCommandItems;
-                        }
+                    for (int i = 0; i < createCount; i++) {
+                        int rangeStart = i == 0 ? i : (i * chunkSize);
+                        int rangeEnd = i == createCount - 1 ? listDate.size() - 1
+                                : rangeStart + chunkSize;
 
-                        cmdParam.put(CMDPARAM_COMPLEMENT_DATA_START_DATE, DateUtils.dateToString(listDate.get(startDateIndex)));
-                        cmdParam.put(CMDPARAM_COMPLEMENT_DATA_END_DATE, DateUtils.dateToString(listDate.get(endDateIndex)));
+                        cmdParam.put(CMDPARAM_COMPLEMENT_DATA_START_DATE, DateUtils.dateToString(listDate.get(rangeStart)));
+                        cmdParam.put(CMDPARAM_COMPLEMENT_DATA_END_DATE, DateUtils.dateToString(listDate.get(rangeEnd)));
                         command.setCommandParam(JSONUtils.toJsonString(cmdParam));
                         processService.createCommand(command);
-
-                        if (schedules.isEmpty() || complementDependentMode == ComplementDependentMode.OFF_MODE) {
-                            logger.info("process code: {} complement dependent in off mode or schedule's size is 0, skip "
-                                    + "dependent complement data", command.getProcessDefinitionCode());
-                        } else {
-                            dependentProcessDefinitionCreateCount += createComplementDependentCommand(schedules, command);
-                        }
                     }
                 }
                 break;
@@ -705,81 +631,7 @@ public class ExecutorServiceImpl extends BaseServiceImpl implements ExecutorServ
             default:
                 break;
         }
-        logger.info("create complement command count: {}, create dependent complement command count: {}", createCount
-                , dependentProcessDefinitionCreateCount);
+        logger.info("create complement command count: {}", createCount);
         return createCount;
-    }
-
-    /**
-     * create complement dependent command
-     */
-    private int createComplementDependentCommand(List<Schedule> schedules, Command command) {
-        int dependentProcessDefinitionCreateCount = 0;
-        Command dependentCommand;
-
-        try {
-            dependentCommand = (Command) BeanUtils.cloneBean(command);
-        } catch (Exception e) {
-            logger.error("copy dependent command error: ", e);
-            return dependentProcessDefinitionCreateCount;
-        }
-
-        List<DependentProcessDefinition> dependentProcessDefinitionList =
-                getComplementDependentDefinitionList(dependentCommand.getProcessDefinitionCode(),
-                        CronUtils.getMaxCycle(schedules.get(0).getCrontab()),
-                        dependentCommand.getWorkerGroup());
-
-        dependentCommand.setTaskDependType(TaskDependType.TASK_POST);
-        for (DependentProcessDefinition dependentProcessDefinition : dependentProcessDefinitionList) {
-            dependentCommand.setProcessDefinitionCode(dependentProcessDefinition.getProcessDefinitionCode());
-            dependentCommand.setWorkerGroup(dependentProcessDefinition.getWorkerGroup());
-            Map<String, String> cmdParam = JSONUtils.toMap(dependentCommand.getCommandParam());
-            cmdParam.put(CMD_PARAM_START_NODES, String.valueOf(dependentProcessDefinition.getTaskDefinitionCode()));
-            dependentCommand.setCommandParam(JSONUtils.toJsonString(cmdParam));
-            dependentProcessDefinitionCreateCount += processService.createCommand(dependentCommand);
-        }
-
-        return dependentProcessDefinitionCreateCount;
-    }
-
-    /**
-     * get complement dependent process definition list
-     */
-    private List<DependentProcessDefinition> getComplementDependentDefinitionList(long processDefinitionCode,
-                                                                               CycleEnum processDefinitionCycle,
-                                                                               String workerGroup) {
-        List<DependentProcessDefinition> dependentProcessDefinitionList =
-                processService.queryDependentProcessDefinitionByProcessDefinitionCode(processDefinitionCode);
-
-        return checkDependentProcessDefinitionValid(dependentProcessDefinitionList,processDefinitionCycle,workerGroup);
-    }
-
-    /**
-     *  Check whether the dependency cycle of the dependent node is consistent with the schedule cycle of
-     *  the dependent process definition and if there is no worker group in the schedule, use the complement selection's
-     *  worker group
-     */
-    private List<DependentProcessDefinition> checkDependentProcessDefinitionValid(List<DependentProcessDefinition> dependentProcessDefinitionList,
-                                                                             CycleEnum processDefinitionCycle,
-                                                                             String workerGroup) {
-        List<DependentProcessDefinition> validDependentProcessDefinitionList = new ArrayList<>();
-
-        List<Long> processDefinitionCodeList = dependentProcessDefinitionList.stream()
-                .map(DependentProcessDefinition::getProcessDefinitionCode)
-                .collect(Collectors.toList());
-
-        Map<Long, String> processDefinitionWorkerGroupMap = processService.queryWorkerGroupByProcessDefinitionCodes(processDefinitionCodeList);
-
-        for (DependentProcessDefinition dependentProcessDefinition : dependentProcessDefinitionList) {
-            if (dependentProcessDefinition.getDependentCycle() == processDefinitionCycle) {
-                if (processDefinitionWorkerGroupMap.get(dependentProcessDefinition.getProcessDefinitionCode()) == null) {
-                    dependentProcessDefinition.setWorkerGroup(workerGroup);
-                }
-
-                validDependentProcessDefinitionList.add(dependentProcessDefinition);
-            }
-        }
-
-        return validDependentProcessDefinitionList;
     }
 }

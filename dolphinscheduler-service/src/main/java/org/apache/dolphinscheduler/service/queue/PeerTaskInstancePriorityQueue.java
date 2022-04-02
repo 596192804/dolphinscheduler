@@ -105,14 +105,6 @@ public class PeerTaskInstancePriorityQueue implements TaskPriorityQueue<TaskInst
     }
 
     /**
-     * clear task
-     *
-     */
-    public void clear() {
-        queue.clear();
-    }
-
-    /**
      * whether contains the task instance
      *
      * @param taskInstance task instance

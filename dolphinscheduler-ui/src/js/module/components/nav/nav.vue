@@ -29,28 +29,21 @@
       </div>
       <div class="clearfix list">
         <div class="nav-links">
-          <router-link :to="{ path: '/projects'}" tag="a" active-class="active" id="tabProject">
+          <router-link :to="{ path: '/projects'}" tag="a" active-class="active">
             <span><em class="ansiconfont el-icon-tickets"></em>{{$t('Project Manage')}}</span><strong></strong>
           </router-link>
         </div>
       </div>
       <div class="clearfix list">
         <div class="nav-links">
-          <router-link :to="{ path: '/dataquality'}" tag="a" active-class="active">
-            <span><em class="ansiconfont el-icon-document-checked"></em>{{$t('DataQuality')}}</span><strong></strong>
-          </router-link>
-        </div>
-      </div>
-      <div class="clearfix list">
-        <div class="nav-links">
-          <router-link :to="{ path: '/resource'}" tag="a" active-class="active" id="tabResource">
+          <router-link :to="{ path: '/resource'}" tag="a" active-class="active">
             <span><em class="ansiconfont el-icon-folder"></em>{{$t('Resources manage')}}</span><strong></strong>
           </router-link>
         </div>
       </div>
       <div class="clearfix list">
         <div class="nav-links">
-          <router-link :to="{ path: '/datasource'}" tag="a" active-class="active" id="tabDataSource">
+          <router-link :to="{ path: '/datasource'}" tag="a" active-class="active">
             <span><em class="ansfont ri-database-2-line"></em>{{$t('Datasource manage')}}</span><strong></strong>
           </router-link>
         </div>
@@ -62,9 +55,16 @@
           </router-link>
         </div>
       </div>
+      <div class="clearfix list">
+        <div class="nav-links">
+          <router-link :to="{ path: '/smartdata'}" tag="a" active-class="active">
+            <span><em class="ansfont ri-line-chart-line"></em>{{'数据分析'}}</span><strong></strong>
+          </router-link>
+        </div>
+      </div>
       <div class="clearfix list" >
         <div class="nav-links">
-          <router-link :to="{ path: '/security'}" tag="a" active-class="active" v-ps="['ADMIN_USER']" id="tabSecurity">
+          <router-link :to="{ path: '/security'}" tag="a" active-class="active" v-ps="['ADMIN_USER']">
             <span><em class="ansfont ri-shield-check-line"></em>{{$t('Security')}}</span><strong></strong>
           </router-link>
         </div>
@@ -124,11 +124,7 @@
             </router-link>
             <router-link :to="{ path: '/projects'}" tag="li" active-class="active">
               <em class="el-icon-tickets"></em>
-              <span>{{$t('Project Manage')}}</span>
-            </router-link>
-            <router-link :to="{ path: '/dataquality'}" tag="li" active-class="active">
-              <em class="el-icon-document-checked"></em>
-              <span>{{$t('DataQuality')}}</span>
+              <span>{{$t('Project manage')}}</span>
             </router-link>
             <router-link :to="{ path: '/resource'}" tag="li" active-class="active">
               <em class="el-icon-folder"></em>
@@ -137,6 +133,10 @@
             <router-link :to="{ path: '/datasource'}" tag="li" active-class="active">
               <em class="ansfont ri-database-2-line"></em>
               <span>{{$t('Datasource manage')}}</span>
+            </router-link>
+            <router-link :to="{ path: '/smartdata'}" tag="li" active-class="active">
+              <em class="ansfont ri-line-chart-line"></em>
+              <span>{{$t('数据分析')}}</span>
             </router-link>
             <router-link :to="{ path: '/security'}" tag="li" active-class="active" v-ps="['ADMIN_USER']">
               <em class="ansfont ri-shield-check-line"></em>
@@ -149,7 +149,6 @@
 
     <el-dialog
       :visible.sync="definitionUpdateDialog"
-      v-if="definitionUpdateDialog"
       append-to-body="true"
       width="auto">
       <m-definition-update :type="type" @onProgressDefinition="onProgressDefinition" @onUpdateDefinition="onUpdateDefinition" @onArchiveDefinition="onArchiveDefinition" @closeDefinition="closeDefinition"></m-definition-update>
@@ -157,7 +156,6 @@
 
     <el-dialog
       :visible.sync="fileUpdateDialog"
-      v-if="fileUpdateDialog"
       append-to-body="true"
       width="auto">
       <m-file-update :type="type" @onProgressFileUpdate="onProgressFileUpdate" @onUpdateFileUpdate="onUpdateFileUpdate" @onArchiveDefinition="onArchiveFileUpdate" @closeFileUpdate="closeFileUpdate"></m-file-update>
@@ -165,7 +163,6 @@
 
     <el-dialog
       :visible.sync="fileChildUpdateDialog"
-      v-if="fileChildUpdateDialog"
       append-to-body="true"
       width="auto">
       <m-file-child-update :type="type" :id="id" @onProgressFileChildUpdate="onProgressFileChildUpdate" @onUpdateFileChildUpdate="onUpdateFileChildUpdate" @onArchiveFileChildUpdate="onArchiveFileChildUpdate" @closeFileChildUpdate="closeFileChildUpdate"></m-file-child-update>
@@ -173,27 +170,9 @@
 
     <el-dialog
       :visible.sync="resourceChildUpdateDialog"
-      v-if="resourceChildUpdateDialog"
       append-to-body="true"
       width="auto">
       <m-resource-child-update :type="type" :id="id" @onProgressResourceChildUpdate="onProgressResourceChildUpdate" @onUpdateResourceChildUpdate="onUpdateResourceChildUpdate" @onArchiveFileChildUpdate="onArchiveResourceChildUpdate" @closeResourceChildUpdate="closeResourceChildUpdate"></m-resource-child-update>
-    </el-dialog>
-
-    <el-dialog
-      :visible.sync="fileReUploadDialog"
-      v-if="fileReUploadDialog"
-      append-to-body="true"
-      width="auto">
-      <m-file-re-upload :type="type" :fileName="fileName" :id="id" :desc="desc" @onProgress="onProgressReUpload" @onUpdate="onUpdateReUpload" @onArchive="onArchiveReUpload" @closeReUpload="closeReUpload"></m-file-re-upload>
-    </el-dialog>
-
-    <el-dialog
-      :visible.sync="fileChildReUploadDialog"
-      append-to-body="true"
-      :destroy-on-close="true"
-      v-if="fileChildReUploadDialog"
-      width="auto">
-      <m-file-child-re-update :type="type" :fileName="fileName" :id="id" :desc="desc" @onProgress="onProgressChildReUpload" @onUpdate="onUpdateChildReUpload" @onArchive="onArchiveChildReUpload" @closeReUpload="closeChildReUpload"></m-file-child-re-update>
     </el-dialog>
   </div>
 </template>
@@ -202,11 +181,9 @@
   import cookies from 'js-cookie'
   import { mapState, mapActions } from 'vuex'
   import { findComponentDownward } from '@/module/util/'
-  import mFileReUpload from '@/module/components/fileUpdate/fileReUpload'
   import mFileUpdate from '@/module/components/fileUpdate/fileUpdate'
   import mFileChildUpdate from '@/module/components/fileUpdate/fileChildUpdate'
   import mResourceChildUpdate from '@/module/components/fileUpdate/resourceChildUpdate'
-  import mFileChildReUpdate from '@/module/components/fileUpdate/fileChildReUpdate'
   import mDefinitionUpdate from '@/module/components/fileUpdate/definitionUpdate'
   import mProgressBar from '@/module/components/progressBar/progressBar'
   import { findLocale, localeList } from '@/module/i18n/config'
@@ -236,12 +213,7 @@
         fileUpdateDialog: false,
         fileChildUpdateDialog: false,
         id: null,
-        fileName: '',
-        desc: '',
-        resourceChildUpdateDialog: false,
-        fileReUploadDialog: false,
-        fileChildReUploadDialog: false,
-        data: ''
+        resourceChildUpdateDialog: false
       }
     },
 
@@ -263,30 +235,6 @@
         } else {
           this._signOut()
         }
-      },
-      /* fileReUpload */
-      _fileReUpload (type, item) {
-        if (this.progress) {
-          this._toggleArchive()
-          return
-        }
-        this.fileReUploadDialog = true
-        this.type = type
-        this.fileName = item.fileName
-        this.desc = item.description
-        this.id = item.id
-      },
-      _fileChildReUpload (type, item, data) {
-        if (this.progress) {
-          this._toggleArchive()
-          return
-        }
-        this.fileReUploadDialog = true
-        this.type = type
-        this.fileName = item.fileName
-        this.desc = item.description
-        this.id = item.id
-        this.data = data
       },
       /**
        * Upload (for the time being)
@@ -313,13 +261,16 @@
         this.progress = 0
         this.definitionUpdateDialog = false
       },
+
       onArchiveDefinition () {
         this.isUpdate = true
       },
+
       closeDefinition () {
         this.progress = 0
         this.definitionUpdateDialog = false
       },
+
       onProgressFileUpdate (val) {
         this.progress = val
       },
@@ -337,6 +288,7 @@
         this.progress = 0
         this.fileUpdateDialog = false
       },
+
       _fileChildUpdate (type, data) {
         if (this.progress) {
           this._toggleArchive()
@@ -366,6 +318,7 @@
         this.progress = 0
         this.fileChildUpdateDialog = false
       },
+
       _resourceChildUpdate (type, data) {
         if (this.progress) {
           this._toggleArchive()
@@ -408,44 +361,11 @@
        * Language switching
        */
       _toggleLanguage (language) {
+        console.log(language)
         cookies.set('language', language, { path: '/' })
         setTimeout(() => {
           window.location.reload()
         }, 100)
-      },
-      onProgressReUpload (val) {
-        this.progress = val
-      },
-      onUpdateReUpload () {
-        let self = this
-        findComponentDownward(self.$root, `resource-list-index-${this.type}`)._updateList()
-        this.isUpdate = false
-        this.progress = 0
-        this.fileReUploadDialog = false
-      },
-      onArchiveReUpload () {
-        this.isUpdate = true
-      },
-      closeReUpload () {
-        this.progress = 0
-        this.fileReUploadDialog = false
-      },
-      onProgressChildReUpload (val) {
-        this.progress = val
-      },
-      onUpdateChildReUpload () {
-        let self = this
-        findComponentDownward(self.$root, `resource-list-index-${this.type}`)._updateList(this.data)
-        this.isUpdate = false
-        this.progress = 0
-        this.fileChildReUploadDialog = false
-      },
-      onArchiveChildReUpload () {
-        this.isUpdate = true
-      },
-      closeChildReUpload () {
-        this.progress = 0
-        this.fileChildReUploadDialog = false
       }
     },
     created () {
@@ -456,7 +376,7 @@
     computed: {
       ...mapState('user', ['userInfo'])
     },
-    components: { mFileUpdate, mFileReUpload, mProgressBar, mDefinitionUpdate, mFileChildUpdate, mResourceChildUpdate, mFileChildReUpdate }
+    components: { mFileUpdate, mProgressBar, mDefinitionUpdate, mFileChildUpdate, mResourceChildUpdate }
   }
 </script>
 
@@ -492,7 +412,7 @@
         width: 180px;
         height: 46px;
         display: block;
-        background: url("./logo.svg") no-repeat;
+        background: url("./logo.png") no-repeat;
       }
     }
     .nav-box {

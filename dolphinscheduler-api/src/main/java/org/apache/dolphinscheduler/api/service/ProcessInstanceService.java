@@ -19,10 +19,11 @@
 package org.apache.dolphinscheduler.api.service;
 
 import org.apache.dolphinscheduler.api.utils.Result;
+import org.apache.dolphinscheduler.common.enums.DependResult;
+import org.apache.dolphinscheduler.common.enums.ExecutionStatus;
+import org.apache.dolphinscheduler.common.enums.Flag;
 import org.apache.dolphinscheduler.dao.entity.ProcessInstance;
 import org.apache.dolphinscheduler.dao.entity.User;
-import org.apache.dolphinscheduler.plugin.task.api.enums.DependResult;
-import org.apache.dolphinscheduler.plugin.task.api.enums.ExecutionStatus;
 
 import java.io.IOException;
 import java.util.List;
@@ -164,21 +165,19 @@ public interface ProcessInstanceService {
     /**
      * view process instance variables
      *
-     * @param projectCode project code
      * @param processInstanceId process instance id
      * @return variables data
      */
-    Map<String, Object> viewVariables(long projectCode, Integer processInstanceId);
+    Map<String, Object> viewVariables(Integer processInstanceId);
 
     /**
      * encapsulation gantt structure
      *
-     * @param projectCode project code
      * @param processInstanceId process instance id
      * @return gantt tree data
      * @throws Exception exception when json parse
      */
-    Map<String, Object> viewGantt(long projectCode, Integer processInstanceId) throws Exception;
+    Map<String, Object> viewGantt(Integer processInstanceId) throws Exception;
 
     /**
      * query process instance by processDefinitionCode and stateArray

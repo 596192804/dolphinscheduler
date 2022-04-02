@@ -69,24 +69,24 @@ public enum CommandType {
     TASK_EXECUTE_REQUEST,
 
     /**
-     * task execute running, from worker to master
+     * execute task ack
      */
-    TASK_EXECUTE_RUNNING,
+    TASK_EXECUTE_ACK,
 
     /**
-     * task execute running ack, from master to worker
-     */
-    TASK_EXECUTE_RUNNING_ACK,
-
-    /**
-     * task execute response, from worker to master
+     * execute task response
      */
     TASK_EXECUTE_RESPONSE,
 
     /**
-     * task execute response ack, from master to worker
+     * db task ack
      */
-    TASK_EXECUTE_RESPONSE_ACK,
+    DB_TASK_ACK,
+
+    /**
+     * db task response
+     */
+    DB_TASK_RESPONSE,
 
     /**
      * kill task
@@ -136,17 +136,5 @@ public enum CommandType {
     /**
      * state event request
      */
-    STATE_EVENT_REQUEST,
-    /**
-     * cache expire
-     */
-    CACHE_EXPIRE,
-    /**
-     * task state event request
-     */
-    TASK_FORCE_STATE_EVENT_REQUEST,
-    /**
-     * task state event request
-     */
-    TASK_WAKEUP_EVENT_REQUEST;
+    STATE_EVENT_REQUEST;
 }

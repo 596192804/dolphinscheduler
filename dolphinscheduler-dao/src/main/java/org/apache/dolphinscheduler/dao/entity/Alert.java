@@ -18,7 +18,6 @@
 package org.apache.dolphinscheduler.dao.entity;
 
 import org.apache.dolphinscheduler.common.enums.AlertStatus;
-import org.apache.dolphinscheduler.common.enums.WarningType;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -53,13 +52,6 @@ public class Alert {
      */
     @TableField(value = "alert_status")
     private AlertStatus alertStatus;
-
-    /**
-     * warning_type
-     */
-    @TableField(value = "warning_type")
-    private WarningType warningType;
-
     /**
      * log
      */
@@ -159,14 +151,6 @@ public class Alert {
         this.info = info;
     }
 
-    public WarningType getWarningType() {
-        return warningType;
-    }
-
-    public void setWarningType(WarningType warningType) {
-        this.warningType = warningType;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -199,9 +183,6 @@ public class Alert {
         if (!createTime.equals(alert.createTime)) {
             return false;
         }
-        if (warningType != alert.warningType) {
-            return false;
-        }
         return updateTime.equals(alert.updateTime) && info.equals(alert.info);
 
     }
@@ -212,7 +193,6 @@ public class Alert {
         result = 31 * result + title.hashCode();
         result = 31 * result + content.hashCode();
         result = 31 * result + alertStatus.hashCode();
-        result = 31 * result + warningType.hashCode();
         result = 31 * result + log.hashCode();
         result = 31 * result + alertGroupId;
         result = 31 * result + createTime.hashCode();
@@ -233,8 +213,6 @@ public class Alert {
                 + '\''
                 + ", alertStatus="
                 + alertStatus
-                + ", warningType="
-                + warningType
                 + ", log='"
                 + log
                 + '\''

@@ -66,9 +66,6 @@ const stateType = [
   }, {
     code: 'FORCED_SUCCESS',
     label: `${i18n.$t('Forced success')}`
-  }, {
-    code: 'SERIAL_WAIT',
-    label: `${i18n.$t('Serial wait')}`
   }
 ]
 

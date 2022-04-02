@@ -17,13 +17,13 @@
 
 package org.apache.dolphinscheduler.dao.mapper;
 
+import org.apache.dolphinscheduler.common.enums.ExecutionStatus;
 import org.apache.dolphinscheduler.common.enums.Flag;
-import org.apache.dolphinscheduler.dao.BaseDaoTest;
+import org.apache.dolphinscheduler.common.enums.TaskType;
 import org.apache.dolphinscheduler.dao.entity.ExecuteStatusCount;
 import org.apache.dolphinscheduler.dao.entity.ProcessDefinition;
 import org.apache.dolphinscheduler.dao.entity.ProcessInstance;
 import org.apache.dolphinscheduler.dao.entity.TaskInstance;
-import org.apache.dolphinscheduler.plugin.task.api.enums.ExecutionStatus;
 
 import java.util.Date;
 import java.util.List;
@@ -31,29 +31,43 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
-public class TaskInstanceMapperTest extends BaseDaoTest {
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@Transactional
+@Rollback
+public class TaskInstanceMapperTest {
 
     @Autowired
-    private TaskInstanceMapper taskInstanceMapper;
+    TaskInstanceMapper taskInstanceMapper;
 
     @Autowired
-    private ProcessDefinitionMapper processDefinitionMapper;
+    ProcessDefinitionMapper processDefinitionMapper;
 
     @Autowired
-    private ProcessInstanceMapper processInstanceMapper;
+    ProcessInstanceMapper processInstanceMapper;
+
+    @Autowired
+    ProcessInstanceMapMapper processInstanceMapMapper;
+
+    private int processInstanceId;
 
     @Before
     public void before() {
         ProcessInstance processInstance = new ProcessInstance();
         processInstance.setWarningGroupId(0);
         processInstance.setCommandParam("");
-        processInstance.setProcessDefinitionCode(1L);
         processInstanceMapper.insert(processInstance);
+        processInstanceId = processInstance.getId();
     }
 
     /**
@@ -63,7 +77,7 @@ public class TaskInstanceMapperTest extends BaseDaoTest {
      */
     private TaskInstance insertTaskInstance(int processInstanceId) {
         //insertOne
-        return insertTaskInstance(processInstanceId, "SHELL");
+        return insertTaskInstance(processInstanceId, TaskType.SHELL.getDesc());
     }
 
     /**
@@ -313,6 +327,7 @@ public class TaskInstanceMapperTest extends BaseDaoTest {
         Assert.assertEquals(countTask, 0);
         Assert.assertEquals(countTask2, 0);
 
+
     }
 
     /**
@@ -334,7 +349,8 @@ public class TaskInstanceMapperTest extends BaseDaoTest {
         processDefinitionMapper.insert(definition);
         taskInstanceMapper.updateById(task);
 
-        List<ExecuteStatusCount> count = taskInstanceMapper.countTaskInstanceStateByProjectCodes(
+
+        List<ExecuteStatusCount> count = taskInstanceMapper.countTaskInstanceStateByUser(
                 null, null,
                 new Long[]{definition.getProjectCode()}
         );

@@ -32,19 +32,6 @@
         where code = #{projectCode}
     </select>
 
-    <select id="queryByCodes" resultType="org.apache.dolphinscheduler.dao.entity.Project">
-        select
-        <include refid="baseSql"/>
-        from t_ds_project
-        where 1 = 1
-        <if test="codes != null and codes.size() != 0">
-            and code in
-            <foreach collection="codes" index="index" item="i" open="(" separator="," close=")">
-                #{i}
-            </foreach>
-        </if>
-    </select>
-
     <select id="queryDetailByCode" resultType="org.apache.dolphinscheduler.dao.entity.Project">
         select
         <include refid="baseSqlV2">
@@ -150,7 +137,6 @@
     <select id="queryProjectWithUserByProcessInstanceId" resultType="org.apache.dolphinscheduler.dao.entity.ProjectUser">
         select
             dp.id project_id,
-            dp.code project_code,
             dp.name project_name,
             u.user_name user_name
         from t_ds_process_instance di
@@ -161,8 +147,6 @@
     </select>
 
     <select id="queryAllProject" resultType="org.apache.dolphinscheduler.dao.entity.Project">
-        select
-        <include refid="baseSql"/>
-        from t_ds_project
+        select * from t_ds_project
     </select>
 </mapper>

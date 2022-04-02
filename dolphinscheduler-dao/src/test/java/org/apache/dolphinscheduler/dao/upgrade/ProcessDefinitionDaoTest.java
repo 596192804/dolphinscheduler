@@ -17,19 +17,17 @@
 
 package org.apache.dolphinscheduler.dao.upgrade;
 
+import static org.apache.dolphinscheduler.dao.upgrade.UpgradeDao.getDataSource;
+
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.sql.DataSource;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
 
-@ActiveProfiles("h2")
 public class ProcessDefinitionDaoTest {
-    @Autowired
-    private DataSource dataSource;
+    final DataSource dataSource = getDataSource();
     final ProcessDefinitionDao processDefinitionDao = new ProcessDefinitionDao();
 
     @Test

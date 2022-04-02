@@ -45,7 +45,6 @@
   import { mapState, mapActions, mapMutations } from 'vuex'
   import { findComponentDownward, uuid } from '@/module/util/'
   import MenuItem from './menuItem.vue'
-  import _ from 'lodash'
 
   export default {
     name: 'dag-context-menu',
@@ -132,10 +131,6 @@
               code,
               name: taskName
             }
-            if (targetTask.taskParams) {
-              task.taskParams = _.cloneDeep(targetTask.taskParams)
-            }
-
             this.dagCanvas.addNode(code, this.currentTask.type, {
               x: targetNode.position.x + 100,
               y: targetNode.position.y + 100

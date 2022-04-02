@@ -20,12 +20,10 @@ package org.apache.dolphinscheduler.dao.mapper;
 import org.apache.dolphinscheduler.dao.entity.DefinitionGroupByUser;
 import org.apache.dolphinscheduler.dao.entity.TaskDefinition;
 import org.apache.dolphinscheduler.dao.entity.TaskDefinitionLog;
-import org.apache.dolphinscheduler.dao.entity.TaskMainInfo;
 
 import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -104,26 +102,20 @@ public interface TaskDefinitionMapper extends BaseMapper<TaskDefinition> {
     int batchInsert(@Param("taskDefinitions") List<TaskDefinitionLog> taskDefinitions);
 
     /**
-     * task main info page
+     * task definition page
      *
      * @param page page
-     * @param projectCode projectCode
-     * @param searchWorkflowName searchWorkflowName
-     * @param searchTaskName searchTaskName
      * @param taskType taskType
-     * @return task main info IPage
+     * @param searchVal searchVal
+     * @param userId userId
+     * @param projectCode projectCode
+     * @param isAdmin isAdmin
+     * @return task definition IPage
      */
-    IPage<TaskMainInfo> queryDefineListPaging(IPage<TaskMainInfo> page,
-                                              @Param("projectCode") long projectCode,
-                                              @Param("searchWorkflowName") String searchWorkflowName,
-                                              @Param("searchTaskName") String searchTaskName,
-                                              @Param("taskType") String taskType);
-
-    /**
-     * query task definition by code list
-     *
-     * @param codes taskDefinitionCode list
-     * @return task definition list
-     */
-    List<TaskDefinition> queryByCodeList(@Param("codes") Collection<Long> codes);
+    IPage<TaskDefinition> queryDefineListPaging(IPage<TaskDefinition> page,
+                                                @Param("projectCode") long projectCode,
+                                                @Param("taskType") String taskType,
+                                                @Param("searchVal") String searchVal,
+                                                @Param("userId") int userId,
+                                                @Param("isAdmin") boolean isAdmin);
 }

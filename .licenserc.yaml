@@ -28,12 +28,11 @@ header:
     - dolphinscheduler-common/src/main/java/org/apache/dolphinscheduler/common/utils/ScriptRunner.java
     - dolphinscheduler-common/src/main/java/org/apache/dolphinscheduler/common/utils/CodeGenerateUtils.java
     - mvnw.cmd
-    - dolphinscheduler-dao/src/main/resources/sql/soft_version
+    - sql/soft_version
     - .mvn
     - .gitattributes
     - '**/licenses/**/LICENSE-*'
     - '**/*.md'
-    - '**/*.svg'
     - '**/*.json'
     - '**/*.iml'
     - '**/*.ini'
@@ -44,8 +43,8 @@ header:
     - '**/NOTICE'
     - '**/node_modules/**'
     - '.github/actions/comment-on-issue/**'
+    - '.github/actions/lable-on-issue/**'
     - '.github/actions/reviewdog-setup/**'
     - '.github/actions/translate-on-issue/**'
-    - '**/.gitkeep'
 
   comment: on-failure

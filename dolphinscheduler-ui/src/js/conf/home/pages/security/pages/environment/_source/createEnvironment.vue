@@ -15,14 +15,13 @@
  * limitations under the License.
  */
 <template>
-  <m-popover okId="btnSubmit" cancelId="btnCancel" ref="popover" :ok-text="item && item.name ? $t('Edit') : $t('Submit')" @ok="_ok" @close="close">
+  <m-popover ref="popover" :ok-text="item && item.name ? $t('Edit') : $t('Submit')" @ok="_ok" @close="close">
     <template slot="content">
       <div class="create-environment-model">
         <m-list-box-f>
           <template slot="name"><strong>*</strong>{{$t('Environment Name')}}</template>
           <template slot="content">
             <el-input
-                    id="inputEnvironmentName"
                     type="input"
                     v-model="name"
                     maxlength="60"
@@ -35,7 +34,6 @@
         <template slot="name"><strong>*</strong>{{$t('Environment Config')}}</template>
         <template slot="content">
           <el-input
-                  id="inputEnvironmentConfig"
                   type="textarea"
                   :autosize="{ minRows: 10, maxRows: 20 }"
                   v-model="config"
@@ -47,7 +45,6 @@
           <template slot="name"><strong>*</strong>{{$t('Environment Desc')}}</template>
           <template slot="content">
             <el-input
-                    id="inputEnvironmentDesc"
                     type="input"
                     v-model="description"
                     maxlength="60"
@@ -60,7 +57,6 @@
           <template slot="name">{{$t('Environment Worker Group')}}</template>
           <template slot="content">
             <el-select
-              id="inputEnvironmentWorkerGroup"
               v-model="workerGroups"
               size="mini"
               multiple
@@ -120,6 +116,8 @@
       _getWorkerGroupList () {
         this.getWorkerGroupsAll().then(res => {
           this.workerGroups = res
+          console.log('get Worker Group List')
+          console.log(this.workerGroups)
         })
       },
       _ok () {

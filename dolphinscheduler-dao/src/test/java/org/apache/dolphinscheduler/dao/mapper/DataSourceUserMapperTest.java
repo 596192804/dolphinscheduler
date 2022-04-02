@@ -14,30 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dolphinscheduler.dao.mapper;
 
-import org.apache.dolphinscheduler.dao.BaseDaoTest;
+
 import org.apache.dolphinscheduler.dao.entity.DatasourceUser;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-
-public class DataSourceUserMapperTest extends BaseDaoTest {
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@Transactional
+@Rollback(true)
+public class DataSourceUserMapperTest {
 
     @Autowired
-    private DataSourceUserMapper dataSourceUserMapper;
+    DataSourceUserMapper dataSourceUserMapper;
+
 
     /**
      * insert
-     *
      * @return DatasourceUser
      */
-    private DatasourceUser insertOne() {
+    private DatasourceUser insertOne(){
         //insertOne
         DatasourceUser dataSourceUser = new DatasourceUser();
         dataSourceUser.setUserId(4);
@@ -53,7 +60,7 @@ public class DataSourceUserMapperTest extends BaseDaoTest {
      * test update
      */
     @Test
-    public void testUpdate() {
+    public void testUpdate(){
         //insertOne
         DatasourceUser dataSourceUser = insertOne();
         //update
@@ -66,7 +73,7 @@ public class DataSourceUserMapperTest extends BaseDaoTest {
      * test delete
      */
     @Test
-    public void testDelete() {
+    public void testDelete(){
 
         DatasourceUser dataSourceUser = insertOne();
         int delete = dataSourceUserMapper.deleteById(dataSourceUser.getId());

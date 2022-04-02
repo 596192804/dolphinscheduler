@@ -23,37 +23,45 @@ import org.apache.dolphinscheduler.common.enums.ReleaseState;
 import org.apache.dolphinscheduler.dao.entity.Command;
 import org.apache.dolphinscheduler.dao.entity.ProcessDefinition;
 import org.apache.dolphinscheduler.dao.entity.Schedule;
+import org.apache.dolphinscheduler.service.bean.SpringApplicationContext;
 import org.apache.dolphinscheduler.service.process.ProcessService;
-import org.apache.dolphinscheduler.service.quartz.impl.QuartzExecutorImpl;
 
 import java.util.Date;
 
+import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
-import org.quartz.JobKey;
-import org.quartz.Scheduler;
+import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.quartz.QuartzJobBean;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import io.micrometer.core.annotation.Counted;
-import io.micrometer.core.annotation.Timed;
+/**
+ * process schedule job
+ */
+public class ProcessScheduleJob implements Job {
 
-public class ProcessScheduleJob extends QuartzJobBean {
+    /**
+     * logger of ProcessScheduleJob
+     */
     private static final Logger logger = LoggerFactory.getLogger(ProcessScheduleJob.class);
 
-    @Autowired
-    private ProcessService processService;
+    public ProcessService getProcessService() {
+        return SpringApplicationContext.getBean(ProcessService.class);
+    }
 
-    @Autowired
-    private QuartzExecutor quartzExecutor;
-
-    @Counted(value = "quartz_job_executed")
-    @Timed(value = "quartz_job_execution", percentiles = {0.5, 0.75, 0.95, 0.99}, histogram = true)
+    /**
+     * Called by the Scheduler when a Trigger fires that is associated with the Job
+     *
+     * @param context JobExecutionContext
+     * @throws JobExecutionException if there is an exception while executing the job.
+     */
     @Override
-    protected void executeInternal(JobExecutionContext context) {
+    public void execute(JobExecutionContext context) throws JobExecutionException {
+
+        Assert.notNull(getProcessService(), "please call init() method first");
+
         JobDataMap dataMap = context.getJobDetail().getJobDataMap();
 
         int projectId = dataMap.getInt(Constants.PROJECT_ID);
@@ -66,14 +74,14 @@ public class ProcessScheduleJob extends QuartzJobBean {
         logger.info("scheduled fire time :{}, fire time :{}, process id :{}", scheduledFireTime, fireTime, scheduleId);
 
         // query schedule
-        Schedule schedule = processService.querySchedule(scheduleId);
+        Schedule schedule = getProcessService().querySchedule(scheduleId);
         if (schedule == null || ReleaseState.OFFLINE == schedule.getReleaseState()) {
             logger.warn("process schedule does not exist in db or process schedule offline，delete schedule job in quartz, projectId:{}, scheduleId:{}", projectId, scheduleId);
-            deleteJob(context, projectId, scheduleId);
+            deleteJob(projectId, scheduleId);
             return;
         }
 
-        ProcessDefinition processDefinition = processService.findProcessDefinitionByCode(schedule.getProcessDefinitionCode());
+        ProcessDefinition processDefinition = getProcessService().findProcessDefinitionByCode(schedule.getProcessDefinitionCode());
         // release state : online/offline
         ReleaseState releaseState = processDefinition.getReleaseState();
         if (releaseState == ReleaseState.OFFLINE) {
@@ -95,22 +103,15 @@ public class ProcessScheduleJob extends QuartzJobBean {
         command.setProcessInstancePriority(schedule.getProcessInstancePriority());
         command.setProcessDefinitionVersion(processDefinition.getVersion());
 
-        processService.createCommand(command);
+        getProcessService().createCommand(command);
     }
 
-    private void deleteJob(JobExecutionContext context, int projectId, int scheduleId) {
-        final Scheduler scheduler = context.getScheduler();
-        String jobName = quartzExecutor.buildJobName(scheduleId);
-        String jobGroupName = quartzExecutor.buildJobGroupName(projectId);
-
-        JobKey jobKey = new JobKey(jobName, jobGroupName);
-        try {
-            if (scheduler.checkExists(jobKey)) {
-                logger.info("Try to delete job: {}, group name: {},", jobName, jobGroupName);
-                scheduler.deleteJob(jobKey);
-            }
-        } catch (Exception e) {
-            logger.error("Failed to delete job: {}", jobKey);
-        }
+    /**
+     * delete job
+     */
+    private void deleteJob(int projectId, int scheduleId) {
+        String jobName = QuartzExecutors.buildJobName(scheduleId);
+        String jobGroupName = QuartzExecutors.buildJobGroupName(projectId);
+        QuartzExecutors.getInstance().deleteJob(jobName, jobGroupName);
     }
 }

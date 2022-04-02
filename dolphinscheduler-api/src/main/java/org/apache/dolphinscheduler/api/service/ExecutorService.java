@@ -19,7 +19,6 @@ package org.apache.dolphinscheduler.api.service;
 
 import org.apache.dolphinscheduler.api.enums.ExecuteType;
 import org.apache.dolphinscheduler.common.enums.CommandType;
-import org.apache.dolphinscheduler.common.enums.ComplementDependentMode;
 import org.apache.dolphinscheduler.common.enums.FailureStrategy;
 import org.apache.dolphinscheduler.common.enums.Priority;
 import org.apache.dolphinscheduler.common.enums.RunMode;
@@ -64,18 +63,16 @@ public interface ExecutorService {
                                             RunMode runMode,
                                             Priority processInstancePriority, String workerGroup, Long environmentCode, Integer timeout,
                                             Map<String, String> startParams, Integer expectedParallelismNumber,
-                                            int dryRun,
-                                            ComplementDependentMode complementDependentMode);
+                                            int dryRun);
 
     /**
      * check whether the process definition can be executed
      *
-     * @param projectCode project code
      * @param processDefinition process definition
      * @param processDefineCode process definition code
      * @return check result code
      */
-    Map<String, Object> checkProcessDefinitionValid(long projectCode, ProcessDefinition processDefinition, long processDefineCode);
+    Map<String, Object> checkProcessDefinitionValid(ProcessDefinition processDefinition, long processDefineCode);
 
     /**
      * do action to process instance：pause, stop, repeat, recover from pause, recover from stop

@@ -20,12 +20,10 @@ package org.apache.dolphinscheduler.server.utils;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 import org.apache.dolphinscheduler.common.Constants;
+import org.apache.dolphinscheduler.common.enums.ExecutionStatus;
 import org.apache.dolphinscheduler.common.utils.HadoopUtils;
 import org.apache.dolphinscheduler.common.utils.OSUtils;
 import org.apache.dolphinscheduler.common.utils.PropertyUtils;
-import org.apache.dolphinscheduler.plugin.task.api.enums.ExecutionStatus;
-
-import org.apache.commons.lang.SystemUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,12 +36,11 @@ import org.mockito.MockitoAnnotations;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({System.class, OSUtils.class, HadoopUtils.class, PropertyUtils.class, SystemUtils.class})
+@PrepareForTest({System.class, OSUtils.class, HadoopUtils.class, PropertyUtils.class})
 public class ProcessUtilsTest {
 
     private static final Logger logger = LoggerFactory.getLogger(ProcessUtils.class);
@@ -56,8 +53,11 @@ public class ProcessUtilsTest {
     @Test
     public void getPidsStr() throws Exception {
         int processId = 1;
+        String pidList = ProcessUtils.getPidsStr(processId);
+        Assert.assertNotEquals("The child process of process 1 should not be empty", pidList, "");
+
         PowerMockito.mockStatic(OSUtils.class);
-        Whitebox.setInternalState(SystemUtils.class, "IS_OS_MAC", true);
+        when(OSUtils.isMacOS()).thenReturn(true);
         when(OSUtils.exeCmd(String.format("%s -p %d", Constants.PSTREE, processId))).thenReturn(null);
         String pidListMac = ProcessUtils.getPidsStr(processId);
         Assert.assertEquals("", pidListMac);

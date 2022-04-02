@@ -36,7 +36,7 @@
         <el-table-column prop="description" :label="$t('Description')"></el-table-column>
         <el-table-column :label="$t('Create Time')" min-width="120">
           <template slot-scope="scope">
-            <span>{{scope.row.updateTime | formatDate}}</span>
+            <span>{{scope.row.createTime | formatDate}}</span>
           </template>
         </el-table-column>
         <el-table-column :label="$t('Operation')" width="100">
@@ -142,7 +142,7 @@
       _mVersionGetProcessDefinitionVersionsPage (val) {
         this.$emit('mVersionGetProcessDefinitionVersionsPage', {
           pageNo: val,
-          pageSize: this.versionData.pageSize,
+          pageSize: this.pageSize,
           processDefinitionCode: this.versionData.processDefinition.code,
           fromThis: this
         })

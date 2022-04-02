@@ -38,18 +38,19 @@ import org.springframework.util.MultiValueMap;
  * login controller test
  */
 public class LoginControllerTest extends AbstractControllerTest {
-    private static final Logger logger = LoggerFactory.getLogger(LoginControllerTest.class);
+
+    private static Logger logger = LoggerFactory.getLogger(LoginControllerTest.class);
 
     @Test
     public void testLogin() throws Exception {
         MultiValueMap<String, String> paramsMap = new LinkedMultiValueMap<>();
-        paramsMap.add("userName", "admin");
-        paramsMap.add("userPassword", "dolphinscheduler123");
+        paramsMap.add("userName","cxc");
+        paramsMap.add("userPassword","123456");
 
         MvcResult mvcResult = mockMvc.perform(post("/login")
                 .params(paramsMap))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andReturn();
 
         Result result = JSONUtils.parseObject(mvcResult.getResponse().getContentAsString(), Result.class);
@@ -65,7 +66,7 @@ public class LoginControllerTest extends AbstractControllerTest {
                 .header("sessionId", sessionId)
                 .params(paramsMap))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andReturn();
 
         Result result = JSONUtils.parseObject(mvcResult.getResponse().getContentAsString(), Result.class);

@@ -17,11 +17,12 @@
 
 package org.apache.dolphinscheduler.common.utils;
 
-import org.apache.commons.lang.StringUtils;
+import static org.apache.dolphinscheduler.common.Constants.COMMON_PROPERTIES_PATH;
+
 import org.apache.dolphinscheduler.common.Constants;
-import org.apache.dolphinscheduler.spi.enums.ResUploadType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.dolphinscheduler.common.enums.ResUploadType;
+
+import org.apache.directory.api.util.Strings;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,10 +31,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import static org.apache.dolphinscheduler.common.Constants.COMMON_PROPERTIES_PATH;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PropertyUtils {
-
     private static final Logger logger = LoggerFactory.getLogger(PropertyUtils.class);
 
     private static final Properties properties = new Properties();
@@ -50,6 +51,7 @@ public class PropertyUtils {
         for (String fileName : propertyFiles) {
             try (InputStream fis = PropertyUtils.class.getResourceAsStream(fileName);) {
                 properties.load(fis);
+
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
                 System.exit(1);
@@ -70,7 +72,7 @@ public class PropertyUtils {
     public static boolean getResUploadStartupState() {
         String resUploadStartupType = PropertyUtils.getUpperCaseString(Constants.RESOURCE_STORAGE_TYPE);
         ResUploadType resUploadType = ResUploadType.valueOf(resUploadStartupType);
-        return resUploadType != ResUploadType.NONE;
+        return resUploadType == ResUploadType.HDFS || resUploadType == ResUploadType.S3;
     }
 
     /**
@@ -90,8 +92,7 @@ public class PropertyUtils {
      * @return property value  with upper case
      */
     public static String getUpperCaseString(String key) {
-        String val = getString(key);
-        return StringUtils.isEmpty(val) ? val : val.toUpperCase();
+        return properties.getProperty(key.trim()).toUpperCase();
     }
 
     /**
@@ -102,8 +103,8 @@ public class PropertyUtils {
      * @return property value
      */
     public static String getString(String key, String defaultVal) {
-        String val = getString(key);
-        return StringUtils.isEmpty(val) ? defaultVal : val;
+        String val = properties.getProperty(key.trim());
+        return val == null ? defaultVal : val;
     }
 
     /**
@@ -123,7 +124,7 @@ public class PropertyUtils {
      */
     public static int getInt(String key, int defaultValue) {
         String value = getString(key);
-        if (StringUtils.isEmpty(value)) {
+        if (value == null) {
             return defaultValue;
         }
 
@@ -142,7 +143,12 @@ public class PropertyUtils {
      * @return property value
      */
     public static boolean getBoolean(String key) {
-        return getBoolean(key, false);
+        String value = properties.getProperty(key.trim());
+        if (null != value) {
+            return Boolean.parseBoolean(value);
+        }
+
+        return false;
     }
 
     /**
@@ -153,29 +159,24 @@ public class PropertyUtils {
      * @return property value
      */
     public static Boolean getBoolean(String key, boolean defaultValue) {
-        String value = getString(key);
-        return StringUtils.isEmpty(value) ? defaultValue : Boolean.parseBoolean(value);
+        String value = properties.getProperty(key.trim());
+        if (null != value) {
+            return Boolean.parseBoolean(value);
+        }
+
+        return defaultValue;
     }
 
     /**
      * get property long value
      *
      * @param key key
-     * @param defaultValue default value
+     * @param defaultVal default value
      * @return property value
      */
-    public static long getLong(String key, long defaultValue) {
-        String value = getString(key);
-        if (StringUtils.isEmpty(value)) {
-            return defaultValue;
-        }
-
-        try {
-            return Long.parseLong(value);
-        } catch (NumberFormatException e) {
-            logger.info(e.getMessage(), e);
-        }
-        return defaultValue;
+    public static long getLong(String key, long defaultVal) {
+        String val = getString(key);
+        return val == null ? defaultVal : Long.parseLong(val);
     }
 
     /**
@@ -188,21 +189,12 @@ public class PropertyUtils {
 
     /**
      * @param key key
-     * @param defaultValue default value
+     * @param defaultVal default value
      * @return property value
      */
-    public static double getDouble(String key, double defaultValue) {
-        String value = getString(key);
-        if (StringUtils.isEmpty(value)) {
-            return defaultValue;
-        }
-
-        try {
-            return Double.parseDouble(value);
-        } catch (NumberFormatException e) {
-            logger.info(e.getMessage(), e);
-        }
-        return defaultValue;
+    public static double getDouble(String key, double defaultVal) {
+        String val = getString(key);
+        return val == null ? defaultVal : Double.parseDouble(val);
     }
 
     /**
@@ -214,10 +206,16 @@ public class PropertyUtils {
      */
     public static String[] getArray(String key, String splitStr) {
         String value = getString(key);
-        if (StringUtils.isEmpty(value)) {
+        if (value == null) {
             return new String[0];
         }
-        return value.split(splitStr);
+        try {
+            String[] propertyArray = value.split(splitStr);
+            return propertyArray;
+        } catch (NumberFormatException e) {
+            logger.info(e.getMessage(), e);
+        }
+        return new String[0];
     }
 
     /**
@@ -229,17 +227,8 @@ public class PropertyUtils {
      */
     public static <T extends Enum<T>> T getEnum(String key, Class<T> type,
                                                 T defaultValue) {
-        String value = getString(key);
-        if (StringUtils.isEmpty(value)) {
-            return defaultValue;
-        }
-
-        try {
-            return Enum.valueOf(type, value);
-        } catch (IllegalArgumentException e) {
-            logger.info(e.getMessage(), e);
-        }
-        return defaultValue;
+        String val = getString(key);
+        return val == null ? defaultValue : Enum.valueOf(type, val);
     }
 
     /**
@@ -259,16 +248,14 @@ public class PropertyUtils {
     }
 
     /**
-     * set value
-     * @param key key
-     * @param value value
+     *
      */
     public static void setValue(String key, String value) {
         properties.setProperty(key, value);
     }
 
     public static Map<String, String> getPropertiesByPrefix(String prefix) {
-        if (StringUtils.isEmpty(prefix)) {
+        if (Strings.isEmpty(prefix)) {
             return null;
         }
         Set<Object> keys = properties.keySet();

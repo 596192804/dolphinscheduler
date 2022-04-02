@@ -17,13 +17,9 @@
 
 package org.apache.dolphinscheduler.plugin.task.pigeon;
 
-import org.apache.dolphinscheduler.plugin.task.api.AbstractTask;
-import org.apache.dolphinscheduler.plugin.task.api.TaskChannel;
-import org.apache.dolphinscheduler.plugin.task.api.TaskExecutionContext;
-import org.apache.dolphinscheduler.plugin.task.api.parameters.AbstractParameters;
-import org.apache.dolphinscheduler.plugin.task.api.parameters.ParametersNode;
-import org.apache.dolphinscheduler.plugin.task.api.parameters.resource.ResourceParametersHelper;
-import org.apache.dolphinscheduler.spi.utils.JSONUtils;
+import org.apache.dolphinscheduler.spi.task.AbstractTask;
+import org.apache.dolphinscheduler.spi.task.TaskChannel;
+import org.apache.dolphinscheduler.spi.task.request.TaskRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,17 +33,7 @@ public class PigeonTaskChannel implements TaskChannel {
     }
 
     @Override
-    public AbstractTask createTask(TaskExecutionContext taskRequest) {
+    public AbstractTask createTask(TaskRequest taskRequest) {
         return new PigeonTask(taskRequest);
-    }
-
-    @Override
-    public AbstractParameters parseParameters(ParametersNode parametersNode) {
-        return JSONUtils.parseObject(parametersNode.getTaskParams(), PigeonParameters.class);
-    }
-
-    @Override
-    public ResourceParametersHelper getResources(String parameters) {
-        return null;
     }
 }

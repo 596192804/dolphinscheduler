@@ -20,12 +20,10 @@ package org.apache.dolphinscheduler.dao.entity;
 import org.apache.dolphinscheduler.common.Constants;
 import org.apache.dolphinscheduler.common.enums.Flag;
 import org.apache.dolphinscheduler.common.enums.Priority;
-import org.apache.dolphinscheduler.plugin.task.api.enums.TaskTimeoutStrategy;
+import org.apache.dolphinscheduler.common.enums.TaskTimeoutStrategy;
 import org.apache.dolphinscheduler.common.enums.TimeoutFlag;
+import org.apache.dolphinscheduler.common.process.Property;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
-import org.apache.dolphinscheduler.plugin.task.api.model.Property;
-
-import org.apache.commons.lang.StringUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -33,11 +31,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -158,7 +157,6 @@ public class TaskDefinition {
     /**
      * timeout notify strategy
      */
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private TaskTimeoutStrategy timeoutNotifyStrategy;
 
     /**
@@ -179,11 +177,13 @@ public class TaskDefinition {
     /**
      * create time
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date createTime;
 
     /**
      * update time
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date updateTime;
 
     /**
@@ -192,29 +192,12 @@ public class TaskDefinition {
     @TableField(exist = false)
     private String modifyBy;
 
-    /**
-     * task group id
-     */
-    private int taskGroupId;
-    /**
-     * task group id
-     */
-    private int taskGroupPriority;
-
     public TaskDefinition() {
     }
 
     public TaskDefinition(long code, int version) {
         this.code = code;
         this.version = version;
-    }
-
-    public int getTaskGroupId() {
-        return taskGroupId;
-    }
-
-    public void setTaskGroupId(int taskGroupId) {
-        this.taskGroupId = taskGroupId;
     }
 
     public String getName() {
@@ -468,53 +451,39 @@ public class TaskDefinition {
             && Objects.equals(workerGroup, that.workerGroup)
             && timeoutFlag == that.timeoutFlag
             && timeoutNotifyStrategy == that.timeoutNotifyStrategy
-            && (Objects.equals(resourceIds, that.resourceIds)
-            || (StringUtils.EMPTY.equals(resourceIds) && that.resourceIds == null)
-            || (StringUtils.EMPTY.equals(that.resourceIds) && resourceIds == null))
-            && environmentCode == that.environmentCode
-            && taskGroupId == that.taskGroupId
-            && taskGroupPriority == that.taskGroupPriority;
+            && Objects.equals(resourceIds, that.resourceIds)
+            && environmentCode == that.environmentCode;
     }
 
     @Override
     public String toString() {
         return "TaskDefinition{"
-                + "id=" + id
-                + ", code=" + code
-                + ", name='" + name + '\''
-                + ", version=" + version
-                + ", description='" + description + '\''
-                + ", projectCode=" + projectCode
-                + ", userId=" + userId
-                + ", taskType=" + taskType
-                + ", taskParams='" + taskParams + '\''
-                + ", taskParamList=" + taskParamList
-                + ", taskParamMap=" + taskParamMap
-                + ", flag=" + flag
-                + ", taskPriority=" + taskPriority
-                + ", userName='" + userName + '\''
-                + ", projectName='" + projectName + '\''
-                + ", workerGroup='" + workerGroup + '\''
-                + ", failRetryTimes=" + failRetryTimes
-                + ", environmentCode='" + environmentCode + '\''
-                + ", taskGroupId='" + taskGroupId + '\''
-                + ", taskGroupPriority='" + taskGroupPriority + '\''
-                + ", failRetryInterval=" + failRetryInterval
-                + ", timeoutFlag=" + timeoutFlag
-                + ", timeoutNotifyStrategy=" + timeoutNotifyStrategy
-                + ", timeout=" + timeout
-                + ", delayTime=" + delayTime
-                + ", resourceIds='" + resourceIds + '\''
-                + ", createTime=" + createTime
-                + ", updateTime=" + updateTime
-                + '}';
-    }
-
-    public int getTaskGroupPriority() {
-        return taskGroupPriority;
-    }
-
-    public void setTaskGroupPriority(int taskGroupPriority) {
-        this.taskGroupPriority = taskGroupPriority;
+            + "id=" + id
+            + ", code=" + code
+            + ", name='" + name + '\''
+            + ", version=" + version
+            + ", description='" + description + '\''
+            + ", projectCode=" + projectCode
+            + ", userId=" + userId
+            + ", taskType=" + taskType
+            + ", taskParams='" + taskParams + '\''
+            + ", taskParamList=" + taskParamList
+            + ", taskParamMap=" + taskParamMap
+            + ", flag=" + flag
+            + ", taskPriority=" + taskPriority
+            + ", userName='" + userName + '\''
+            + ", projectName='" + projectName + '\''
+            + ", workerGroup='" + workerGroup + '\''
+            + ", failRetryTimes=" + failRetryTimes
+            + ", environmentCode='" + environmentCode + '\''
+            + ", failRetryInterval=" + failRetryInterval
+            + ", timeoutFlag=" + timeoutFlag
+            + ", timeoutNotifyStrategy=" + timeoutNotifyStrategy
+            + ", timeout=" + timeout
+            + ", delayTime=" + delayTime
+            + ", resourceIds='" + resourceIds + '\''
+            + ", createTime=" + createTime
+            + ", updateTime=" + updateTime
+            + '}';
     }
 }

@@ -21,6 +21,7 @@ import static org.apache.dolphinscheduler.common.Constants.YYYYMMDDHHMMSS;
 
 import org.apache.dolphinscheduler.common.Constants;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
@@ -34,6 +35,14 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(DateUtils.class)
 public class FileUtilsTest {
+
+    @Test
+    public void suffix() {
+        Assert.assertEquals("java", FileUtils.suffix("ninfor.java"));
+        Assert.assertEquals("", FileUtils.suffix(null));
+        Assert.assertEquals("", FileUtils.suffix(""));
+        Assert.assertEquals("", FileUtils.suffix("ninfor-java"));
+    }
 
     @Test
     public void testGetDownloadFilename() {
@@ -81,10 +90,10 @@ public class FileUtilsTest {
     public void testWriteContent2File() throws FileNotFoundException {
         // file exists, fmt is invalid
         String filePath = "test/testFile.txt";
-        String content = "正正正faffdasfasdfas，한국어； 한글……にほんご\nfrançais";
+        String content = "正正正faffdasfasdfas";
         FileUtils.writeContent2File(content, filePath);
 
-        String fileContent = FileUtils.readFile2Str(new FileInputStream(filePath));
+        String  fileContent = FileUtils.readFile2Str(new FileInputStream(new File(filePath)));
         Assert.assertEquals(content, fileContent);
     }
 

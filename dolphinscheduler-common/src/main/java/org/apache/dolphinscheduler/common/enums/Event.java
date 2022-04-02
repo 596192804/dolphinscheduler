@@ -18,9 +18,6 @@
 package org.apache.dolphinscheduler.common.enums;
 
 public enum Event {
-    DISPATCH,
-    DELAY,
-    RUNNING,
-    RESULT,
-    ;
+    ACK,
+    RESULT;
 }

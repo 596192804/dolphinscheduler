@@ -19,7 +19,6 @@ package org.apache.dolphinscheduler.dao.mapper;
 
 import org.apache.dolphinscheduler.common.enums.UserType;
 import org.apache.dolphinscheduler.common.utils.DateUtils;
-import org.apache.dolphinscheduler.dao.BaseDaoTest;
 import org.apache.dolphinscheduler.dao.entity.AccessToken;
 import org.apache.dolphinscheduler.dao.entity.AlertGroup;
 import org.apache.dolphinscheduler.dao.entity.Queue;
@@ -32,26 +31,35 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
-public class UserMapperTest extends BaseDaoTest {
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@Transactional
+@Rollback(true)
+public class UserMapperTest {
     @Autowired
     private UserMapper userMapper;
 
     @Autowired
-    private AlertGroupMapper alertGroupMapper;
+    AlertGroupMapper alertGroupMapper;
 
     @Autowired
-    private AccessTokenMapper accessTokenMapper;
+    AccessTokenMapper accessTokenMapper;
 
     @Autowired
-    private TenantMapper tenantMapper;
+    TenantMapper tenantMapper;
 
     @Autowired
-    private QueueMapper queueMapper;
+    QueueMapper queueMapper;
 
     /**
      * insert one user

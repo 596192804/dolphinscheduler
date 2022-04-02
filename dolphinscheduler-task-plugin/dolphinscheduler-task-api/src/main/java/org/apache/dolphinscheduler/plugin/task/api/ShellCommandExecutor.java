@@ -17,7 +17,8 @@
 
 package org.apache.dolphinscheduler.plugin.task.api;
 
-import org.apache.dolphinscheduler.plugin.task.api.utils.OSUtils;
+import org.apache.dolphinscheduler.plugin.task.util.OSUtils;
+import org.apache.dolphinscheduler.spi.task.request.TaskRequest;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -55,7 +56,7 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
      * @param logger logger
      */
     public ShellCommandExecutor(Consumer<LinkedBlockingQueue<String>> logHandler,
-                                TaskExecutionContext taskRequest,
+                                TaskRequest taskRequest,
                                 Logger logger) {
         super(logHandler, taskRequest, logger);
     }

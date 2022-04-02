@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 <template>
-  <div class="conditions-task">
+  <div class="conditions-model">
     <m-list-box>
       <div slot="text">{{$t('Custom Parameters')}}</div>
       <div slot="content">
@@ -175,8 +175,8 @@
   }
 </script>
 
-<style lang="scss" rel="stylesheet/scss" scoped>
-  .conditions-task {
+<style lang="scss" rel="stylesheet/scss">
+  .conditions-model {
     margin-top: -10px;
     .dep-opt {
       margin-bottom: 10px;

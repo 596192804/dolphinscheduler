@@ -133,10 +133,6 @@ const runningType = [
   {
     desc: `${i18n.$t('Recovery waiting thread')}`,
     code: 'RECOVER_WAITING_THREAD'
-  },
-  {
-    desc: `${i18n.$t('Recover serial wait')}`,
-    code: 'RECOVER_SERIAL_WAIT'
   }
 ]
 
@@ -155,32 +151,28 @@ const tasksState = {
     desc: `${i18n.$t('Submitted successfully')}`,
     color: '#A9A9A9',
     icoUnicode: 'ri-record-circle-fill',
-    isSpin: false,
-    classNames: 'submitted'
+    isSpin: false
   },
   RUNNING_EXECUTION: {
     id: 1,
     desc: `${i18n.$t('Executing')}`,
     color: '#0097e0',
     icoUnicode: 'el-icon-s-tools',
-    isSpin: true,
-    classNames: 'executing'
+    isSpin: true
   },
   READY_PAUSE: {
     id: 2,
     desc: `${i18n.$t('Ready to pause')}`,
     color: '#07b1a3',
     icoUnicode: 'ri-settings-3-line',
-    isSpin: false,
-    classNames: 'submitted'
+    isSpin: false
   },
   PAUSE: {
     id: 3,
     desc: `${i18n.$t('Pause')}`,
     color: '#057c72',
     icoUnicode: 'el-icon-video-pause',
-    isSpin: false,
-    classNames: 'pause'
+    isSpin: false
   },
   READY_STOP: {
     id: 4,
@@ -201,16 +193,14 @@ const tasksState = {
     desc: `${i18n.$t('Failed')}`,
     color: '#000000',
     icoUnicode: 'el-icon-circle-close',
-    isSpin: false,
-    classNames: 'failed'
+    isSpin: false
   },
   SUCCESS: {
     id: 7,
     desc: `${i18n.$t('Success')}`,
     color: '#33cc00',
     icoUnicode: 'el-icon-circle-check',
-    isSpin: false,
-    classNames: 'success'
+    isSpin: false
   },
   NEED_FAULT_TOLERANCE: {
     id: 8,
@@ -253,13 +243,6 @@ const tasksState = {
     color: '#5102ce',
     icoUnicode: 'el-icon-success',
     isSpin: false
-  },
-  SERIAL_WAIT: {
-    id: 14,
-    desc: `${i18n.$t('Serial wait')}`,
-    color: '#5102ce',
-    icoUnicode: 'el-icon-loading',
-    isSpin: false
   }
 }
 
@@ -280,8 +263,7 @@ const tasksType = {
   },
   PROCEDURE: {
     desc: 'PROCEDURE',
-    color: '#525CCD',
-    helperLinkDisable: true
+    color: '#525CCD'
   },
   SQL: {
     desc: 'SQL',
@@ -297,8 +279,7 @@ const tasksType = {
   },
   MR: {
     desc: 'MapReduce',
-    color: '#A0A5CC',
-    helperLinkDisable: true
+    color: '#A0A5CC'
   },
   PYTHON: {
     desc: 'PYTHON',
@@ -322,25 +303,19 @@ const tasksType = {
   },
   SQOOP: {
     desc: 'SQOOP',
-    color: '#E46F13',
-    helperLinkDisable: true
+    color: '#E46F13'
   },
   CONDITIONS: {
     desc: 'CONDITIONS',
-    color: '#E46F13'
-  },
-  DATA_QUALITY: {
-    desc: 'DATA_QUALITY',
     color: '#E46F13'
   },
   SWITCH: {
     desc: 'SWITCH',
     color: '#E46F13'
   },
-  SEATUNNEL: {
-    desc: 'SEATUNNEL',
-    color: '#646465',
-    helperLinkDisable: true
+  WATERDROP: {
+    desc: 'WATERDROP',
+    color: '#646465'
   }
 }
 

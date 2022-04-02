@@ -20,6 +20,7 @@ package org.apache.dolphinscheduler.dao.entity;
 import java.util.Date;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 /**
  * task definition log
@@ -35,6 +36,7 @@ public class TaskDefinitionLog extends TaskDefinition {
     /**
      * operate time
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date operateTime;
 
     public TaskDefinitionLog() {

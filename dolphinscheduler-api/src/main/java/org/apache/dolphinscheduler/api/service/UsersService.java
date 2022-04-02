@@ -44,7 +44,7 @@ public interface UsersService {
      * @throws Exception exception
      */
     Map<String, Object> createUser(User loginUser, String userName, String userPassword, String email,
-                                   int tenantId, String phone, String queue, int state) throws Exception;
+                                   int tenantId, String phone, String queue, int state) throws IOException;
 
     User createUser(String userName, String userPassword, String email,
                     int tenantId, String phone, String queue, int state);
@@ -130,7 +130,7 @@ public interface UsersService {
      * @throws Exception exception
      */
     Map<String, Object> updateUser(User loginUser, int userId, String userName, String userPassword, String email,
-                                   int tenantId, String phone, String queue, int state, String timeZone) throws IOException;
+                                   int tenantId, String phone, String queue, int state) throws IOException;
 
     /**
      * delete user
@@ -152,25 +152,6 @@ public interface UsersService {
      */
     Map<String, Object> grantProject(User loginUser, int userId, String projectIds);
 
-
-    /**
-     * grant project by code
-     *
-     * @param loginUser login user
-     * @param userId user id
-     * @param projectCode project code
-     * @return grant result code
-     */
-    Map<String, Object> grantProjectByCode(User loginUser, int userId, long projectCode);
-
-    /**
-     * revoke the project permission for specified user.
-     * @param loginUser     Login user
-     * @param userId        User id
-     * @param projectCode   Project Code
-     * @return
-     */
-    Map<String, Object> revokeProject(User loginUser, int userId, long projectCode);
 
     /**
      * grant resource
@@ -242,20 +223,20 @@ public interface UsersService {
      * unauthorized user
      *
      * @param loginUser login user
-     * @param alertGroupId alert group id
+     * @param alertgroupId alert group id
      * @return unauthorize result code
      */
-    Map<String, Object> unauthorizedUser(User loginUser, Integer alertGroupId);
+    Map<String, Object> unauthorizedUser(User loginUser, Integer alertgroupId);
 
 
     /**
      * authorized user
      *
      * @param loginUser login user
-     * @param alertGroupId alert group id
+     * @param alertgroupId alert group id
      * @return authorized result code
      */
-    Map<String, Object> authorizedUser(User loginUser, Integer alertGroupId);
+    Map<String, Object> authorizedUser(User loginUser, Integer alertgroupId);
 
     /**
      * registry user, default state is 0, default tenant_id is 1, no phone, no queue

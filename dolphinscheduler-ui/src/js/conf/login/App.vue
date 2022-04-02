@@ -24,7 +24,6 @@
         <label>{{$t('User Name')}}</label>
         <div>
           <el-input
-                  id="inputUsername"
                   type="text"
                   v-model.trim="userName"
                   :placeholder="$t('Please enter user name')"
@@ -40,7 +39,6 @@
         <label>{{$t('Password')}}</label>
         <div>
           <el-input
-                  id="inputPassword"
                   type="password"
                   v-model="userPassword"
                   :placeholder="$t('Please enter your password')"
@@ -53,7 +51,7 @@
         </p>
       </div>
       <div class="list" style="margin-top: 10px;">
-        <el-button id="btnLogin" style="width: 365px" type="primary" round :loading="spinnerLoading" long @click="_ok">{{spinnerLoading ? $t('Loading...') : ` ${$t('Login')} `}} </el-button>
+        <el-button style="width: 365px" type="primary" round :loading="spinnerLoading" long @click="_ok">{{spinnerLoading ? $t('Loading...') : ` ${$t('Login')} `}} </el-button>
       </div>
     </div>
   </div>
@@ -162,11 +160,12 @@
     .text-1 {
       padding-top: 30px;
       margin-bottom: -6px;
+      text-align: center;
       a {
         width: 280px;
         height: 60px;
         display: block;
-        background: url("img/login-logo.svg") no-repeat 23px;
+        background: url("./img/logo-login.png") no-repeat;
         margin: 0 auto;
       }
     }

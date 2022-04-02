@@ -24,16 +24,13 @@ import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKN
 import static com.fasterxml.jackson.databind.DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL;
 import static com.fasterxml.jackson.databind.MapperFeature.REQUIRE_SETTERS_FOR_GETTERS;
 
-import org.apache.dolphinscheduler.common.Constants;
-import org.apache.dolphinscheduler.spi.utils.StringUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.TimeZone;
 
 import org.slf4j.Logger;
@@ -63,10 +60,6 @@ public class JSONUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(JSONUtils.class);
 
-    static {
-        logger.info("init timezone: {}",TimeZone.getDefault());
-    }
-
     /**
      * can use static singleton, inject: just make sure to reuse!
      */
@@ -75,8 +68,7 @@ public class JSONUtils {
             .configure(ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT, true)
             .configure(READ_UNKNOWN_ENUM_VALUES_AS_NULL, true)
             .configure(REQUIRE_SETTERS_FOR_GETTERS, true)
-            .setTimeZone(TimeZone.getDefault())
-            .setDateFormat(new SimpleDateFormat(Constants.YYYY_MM_DD_HH_MM_SS));
+            .setTimeZone(TimeZone.getDefault());
 
     private JSONUtils() {
         throw new UnsupportedOperationException("Construct JSONUtils");
@@ -231,31 +223,6 @@ public class JSONUtils {
     }
 
     /**
-     * json to map
-     *
-     * @param json json
-     * @param classK classK
-     * @param classV classV
-     * @param <K> K
-     * @param <V> V
-     * @return to map
-     */
-    public static <K, V> Map<K, V> toMap(String json, Class<K> classK, Class<V> classV) {
-        if (StringUtils.isEmpty(json)) {
-            return Collections.emptyMap();
-        }
-
-        try {
-            return objectMapper.readValue(json, new TypeReference<Map<K, V>>() {
-            });
-        } catch (Exception e) {
-            logger.error("json to map exception!", e);
-        }
-
-        return Collections.emptyMap();
-    }
-
-    /**
      * from the key-value generated json  to get the str value no matter the real type of value
      * @param json the json str
      * @param nodeName key
@@ -264,11 +231,7 @@ public class JSONUtils {
     public static String getNodeString(String json, String nodeName) {
         try {
             JsonNode rootNode = objectMapper.readTree(json);
-            JsonNode jsonNode = rootNode.findValue(nodeName);
-            if (Objects.isNull(jsonNode)) {
-                return "";
-            }
-            return jsonNode.isTextual() ? jsonNode.asText() : jsonNode.toString();
+            return rootNode.has(nodeName) ? rootNode.get(nodeName).toString() : "";
         } catch (JsonProcessingException e) {
             return "";
         }

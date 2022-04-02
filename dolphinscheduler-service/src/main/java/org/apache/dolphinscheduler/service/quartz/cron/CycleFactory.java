@@ -72,15 +72,6 @@ public class CycleFactory {
     public static AbstractCycle month(Cron cron) {
       return new MonthCycle(cron);
     }
-    
-    /**
-     * year
-     * @param cron cron
-     * @return AbstractCycle
-     */
-    public static AbstractCycle year(Cron cron) {
-        return new YearCycle(cron);
-    }
 
   /**
    * day cycle
@@ -284,52 +275,4 @@ public class CycleFactory {
           return null;
         }
   }
-    
-    /**
-     * year cycle
-     */
-    public static class YearCycle extends AbstractCycle {
-        public YearCycle(Cron cron) {
-            super(cron);
-        }
-        
-        /**
-         * get cycle
-         * @return CycleEnum
-         */
-        @Override
-        protected CycleEnum getCycle() {
-            boolean flag = (minFiledIsSetAll()
-                    && hourFiledIsSetAll()
-                    && dayOfMonthFieldIsSetAll()
-                    && dayOfWeekField.getExpression() instanceof QuestionMark
-                    && monthFieldIsSetAll())
-                    && yearFieldIsEvery() ||
-                    (minFiledIsSetAll()
-                            && hourFiledIsSetAll()
-                            && dayOfMonthField.getExpression() instanceof QuestionMark
-                            && dayofWeekFieldIsSetAll()
-                            && monthFieldIsSetAll()
-                            && yearFieldIsEvery());
-            
-            if (flag) {
-                return CycleEnum.YEAR;
-            }
-            
-            return null;
-        }
-        
-        /**
-         * get mini cycle
-         * @return CycleEnum
-         */
-        @Override
-        protected CycleEnum getMiniCycle() {
-            if (yearFieldIsEvery()) {
-                return CycleEnum.YEAR;
-            }
-            
-            return null;
-        }
-    }
 }

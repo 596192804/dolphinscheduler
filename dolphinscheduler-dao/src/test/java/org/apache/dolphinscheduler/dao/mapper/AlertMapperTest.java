@@ -23,9 +23,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 import org.apache.dolphinscheduler.common.enums.AlertStatus;
-import org.apache.dolphinscheduler.common.enums.WarningType;
 import org.apache.dolphinscheduler.common.utils.DateUtils;
-import org.apache.dolphinscheduler.dao.BaseDaoTest;
 import org.apache.dolphinscheduler.dao.entity.Alert;
 
 import java.util.HashMap;
@@ -33,12 +31,21 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * alert mapper test
  */
-public class AlertMapperTest extends BaseDaoTest {
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@Transactional
+@Rollback(true)
+public class AlertMapperTest {
 
     @Autowired
     private AlertMapper alertMapper;
@@ -157,7 +164,6 @@ public class AlertMapperTest extends BaseDaoTest {
         alert.setTitle("test alert");
         alert.setContent("[{'type':'WORKER','host':'192.168.xx.xx','event':'server down','warning level':'serious'}]");
         alert.setAlertStatus(alertStatus);
-        alert.setWarningType(WarningType.FAILURE);
         alert.setLog("success");
         alert.setCreateTime(DateUtils.getCurrentDate());
         alert.setUpdateTime(DateUtils.getCurrentDate());

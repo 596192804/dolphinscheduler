@@ -19,12 +19,12 @@
     <template slot="conditions">
       <m-conditions @on-conditions="_onConditions">
         <template slot="button-group" v-if="isADMIN">
-          <el-button id="btnCreateWorkerGroup" size="mini" @click="_create('')">{{$t('Create worker group')}}</el-button>
+          <el-button size="mini" @click="_create('')">{{$t('Create worker group')}}</el-button>
           <el-dialog
             :title="item ? $t('Edit worker group') : $t('Create worker group')"
             v-if="createWorkerGroupDialog"
             :visible.sync="createWorkerGroupDialog"
-            width="auto">
+            width="50%">
             <m-create-worker :item="item" :worker-address-list="workerAddressList" @onUpdate="onUpdate" @close="close"></m-create-worker>
           </el-dialog>
         </template>

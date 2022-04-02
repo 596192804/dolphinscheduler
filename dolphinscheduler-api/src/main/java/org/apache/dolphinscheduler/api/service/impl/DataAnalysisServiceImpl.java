@@ -25,6 +25,7 @@ import org.apache.dolphinscheduler.api.service.DataAnalysisService;
 import org.apache.dolphinscheduler.api.service.ProjectService;
 import org.apache.dolphinscheduler.common.Constants;
 import org.apache.dolphinscheduler.common.enums.CommandType;
+import org.apache.dolphinscheduler.common.enums.ExecutionStatus;
 import org.apache.dolphinscheduler.common.enums.UserType;
 import org.apache.dolphinscheduler.common.utils.DateUtils;
 import org.apache.dolphinscheduler.common.utils.TriFunction;
@@ -39,12 +40,10 @@ import org.apache.dolphinscheduler.dao.mapper.ProcessDefinitionMapper;
 import org.apache.dolphinscheduler.dao.mapper.ProcessInstanceMapper;
 import org.apache.dolphinscheduler.dao.mapper.ProjectMapper;
 import org.apache.dolphinscheduler.dao.mapper.TaskInstanceMapper;
-import org.apache.dolphinscheduler.plugin.task.api.enums.ExecutionStatus;
 import org.apache.dolphinscheduler.service.process.ProcessService;
 
 import org.apache.commons.lang.StringUtils;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -91,30 +90,30 @@ public class DataAnalysisServiceImpl extends BaseServiceImpl implements DataAnal
     /**
      * statistical task instance status data
      *
-     * @param loginUser   login user
+     * @param loginUser login user
      * @param projectCode project code
-     * @param startDate   start date
-     * @param endDate     end date
+     * @param startDate start date
+     * @param endDate end date
      * @return task state count data
      */
     @Override
     public Map<String, Object> countTaskStateByProject(User loginUser, long projectCode, String startDate, String endDate) {
 
         return countStateByProject(
-            loginUser,
-            projectCode,
-            startDate,
-            endDate,
-            (start, end, projectCodes) -> this.taskInstanceMapper.countTaskInstanceStateByProjectCodes(start, end, projectCodes));
+                loginUser,
+                projectCode,
+                startDate,
+                endDate,
+            (start, end, projectCodes) -> this.taskInstanceMapper.countTaskInstanceStateByUser(start, end, projectCodes));
     }
 
     /**
      * statistical process instance status data
      *
-     * @param loginUser   login user
+     * @param loginUser login user
      * @param projectCode project code
-     * @param startDate   start date
-     * @param endDate     end date
+     * @param startDate start date
+     * @param endDate end date
      * @return process instance state count data
      */
     @Override
@@ -124,7 +123,7 @@ public class DataAnalysisServiceImpl extends BaseServiceImpl implements DataAnal
                 projectCode,
                 startDate,
                 endDate,
-            (start, end, projectCodes) -> this.processInstanceMapper.countInstanceStateByProjectCodes(start, end, projectCodes));
+            (start, end, projectCodes) -> this.processInstanceMapper.countInstanceStateByUser(start, end, projectCodes));
         // process state count needs to remove state of forced success
         if (result.containsKey(Constants.STATUS) && result.get(Constants.STATUS).equals(Status.SUCCESS)) {
             ((TaskCountDto)result.get(Constants.DATA_LIST)).removeStateFromCountList(ExecutionStatus.FORCED_SUCCESS);
@@ -132,14 +131,6 @@ public class DataAnalysisServiceImpl extends BaseServiceImpl implements DataAnal
         return result;
     }
 
-    /**
-     * Wrapper function of counting process instance state and task state
-     *
-     * @param loginUser   login user
-     * @param projectCode project code
-     * @param startDate   start date
-     * @param endDate     end date
-     */
     private Map<String, Object> countStateByProject(User loginUser, long projectCode, String startDate, String endDate
             , TriFunction<Date, Date, Long[], List<ExecuteStatusCount>> instanceStateCounter) {
         Map<String, Object> result = new HashMap<>();
@@ -163,13 +154,10 @@ public class DataAnalysisServiceImpl extends BaseServiceImpl implements DataAnal
             }
         }
 
-        List<ExecuteStatusCount> processInstanceStateCounts = new ArrayList<>();
         Long[] projectCodeArray = projectCode == 0 ? getProjectCodesArrays(loginUser)
-            : new Long[] {projectCode};
-
-        if (projectCodeArray.length != 0 || loginUser.getUserType() == UserType.ADMIN_USER) {
-            processInstanceStateCounts = instanceStateCounter.apply(start, end, projectCodeArray);
-        }
+                : new Long[] { projectCode };
+        List<ExecuteStatusCount> processInstanceStateCounts =
+                instanceStateCounter.apply(start, end, projectCodeArray);
 
         if (processInstanceStateCounts != null) {
             TaskCountDto taskCountResult = new TaskCountDto(processInstanceStateCounts);
@@ -181,11 +169,9 @@ public class DataAnalysisServiceImpl extends BaseServiceImpl implements DataAnal
 
 
     /**
-     * statistics the process definition quantities of a certain person
-     * <p>
-     * We only need projects which users have permission to see to determine whether the definition belongs to the user or not.
+     * statistics the process definition quantities of certain person
      *
-     * @param loginUser   login user
+     * @param loginUser login user
      * @param projectCode project code
      * @return definition count data
      */
@@ -201,12 +187,10 @@ public class DataAnalysisServiceImpl extends BaseServiceImpl implements DataAnal
             }
         }
 
-        List<DefinitionGroupByUser> defineGroupByUsers = new ArrayList<>();
         Long[] projectCodeArray = projectCode == 0 ? getProjectCodesArrays(loginUser)
-            : new Long[] {projectCode};
-        if (projectCodeArray.length != 0 || loginUser.getUserType() == UserType.ADMIN_USER) {
-            defineGroupByUsers = processDefinitionMapper.countDefinitionByProjectCodes(projectCodeArray);
-        }
+                : new Long[] { projectCode };
+        List<DefinitionGroupByUser> defineGroupByUsers = processDefinitionMapper.countDefinitionGroupByUser(
+                loginUser.getId(), projectCodeArray, isAdmin(loginUser));
 
         DefineUserDto dto = new DefineUserDto(defineGroupByUsers);
         result.put(Constants.DATA_LIST, dto);

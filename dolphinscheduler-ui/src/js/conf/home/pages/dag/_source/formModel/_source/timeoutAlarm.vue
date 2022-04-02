@@ -60,11 +60,7 @@
 <script>
   import _ from 'lodash'
   import disabledState from '@/module/mixin/disabledState'
-  const StrategyMap = {
-    WARN: 'WARN',
-    FAILED: 'FAILED',
-    WARNFAILED: 'WARNFAILED'
-  }
+
   export default {
     name: 'form-timeout-alarm',
     data () {
@@ -104,12 +100,10 @@
           strategy: (() => {
             // Handling checkout sequence
             let strategy = this.strategy
-            if (strategy.length > 1) {
-              return StrategyMap.WARNFAILED
-            } else if (strategy.length === 1) {
-              return strategy[0]
+            if (strategy.length === 2 && strategy[0] === 'FAILED') {
+              return [strategy[1], strategy[0]].join(',')
             } else {
-              return ''
+              return strategy.join(',')
             }
           })(),
           interval: parseInt(this.interval),
@@ -125,15 +119,7 @@
       // Non-null objects represent backfill
       if (!_.isEmpty(o) && o.timeout) {
         this.enable = o.timeout.enable || false
-        if (o.timeout.strategy) {
-          if (o.timeout.strategy === StrategyMap.WARNFAILED) {
-            this.strategy = [StrategyMap.WARN, StrategyMap.FAILED]
-          } else {
-            this.strategy = [o.timeout.strategy]
-          }
-        } else {
-          this.strategy = [StrategyMap.WARN]
-        }
+        this.strategy = _.split(o.timeout.strategy, ',') || ['WARN']
         this.interval = o.timeout.interval || null
       }
     },

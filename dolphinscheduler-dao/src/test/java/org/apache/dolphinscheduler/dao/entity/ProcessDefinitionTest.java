@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dolphinscheduler.dao.entity;
 
 import org.junit.Assert;
@@ -34,6 +33,8 @@ public class ProcessDefinitionTest {
 
         taskInstance.getGlobalParamMap();
         Assert.assertEquals("{selenium_global_parameters_1=selenium_global_parameters_value_1}",taskInstance.getGlobalParamMap().toString());
+
+
 
     }
 }

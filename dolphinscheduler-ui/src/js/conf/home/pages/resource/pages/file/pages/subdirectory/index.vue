@@ -18,7 +18,7 @@
   <div class="home-main list-construction-model">
     <div class="content-title">
       <a class="bread" style="padding-left: 15px;" @click="() => $router.push({path: `/resource/file`})">{{$t('File Manage')}}</a>
-      <a class="bread" v-for="(item,$index) in breadList" :key="$index" @click="_ckOperation(item, $index)">{{'>'+item}}</a>
+      <a class="bread" v-for="(item,$index) in breadList" :key="$index" @click="_ckOperation($index)">{{'>'+item}}</a>
     </div>
     <div class="conditions-box">
       <m-conditions @on-conditions="_onConditions">
@@ -135,7 +135,7 @@
         this.searchParams.id = this.$route.params.id
         this._debounceGET()
       },
-      _ckOperation (item, index) {
+      _ckOperation (index) {
         let breadName = ''
         this.breadList.forEach((item, i) => {
           if (i <= index) {
@@ -147,8 +147,7 @@
       transferApi (api) {
         this.getResourceId({
           type: 'FILE',
-          fullName: api,
-          id: this.searchParams.id
+          fullName: api
         }).then(res => {
           localStore.setItem('currentDir', `${res.fullName}`)
           this.$router.push({ path: `/resource/file/subdirectory/${res.id}` })

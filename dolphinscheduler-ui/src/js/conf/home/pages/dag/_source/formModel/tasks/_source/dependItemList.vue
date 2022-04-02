@@ -76,8 +76,7 @@
     props: {
       dependItemList: Array,
       index: Number,
-      dependTaskList: Array,
-      projectDefinitionsCache: Object
+      dependTaskList: Array
     },
     model: {
       prop: 'dependItemList',
@@ -137,9 +136,6 @@
         })
       },
       _getProcessByProjectCode (code) {
-        if (this.projectDefinitionsCache[code]) {
-          return Promise.resolve(this.projectDefinitionsCache[code])
-        }
         return new Promise((resolve, reject) => {
           this.store.dispatch('dag/getProcessByProjectCode', code).then(res => {
             let definitionList = _.map(_.cloneDeep(res), v => {
@@ -147,10 +143,6 @@
                 value: v.processDefinition.code,
                 label: v.processDefinition.name
               }
-            })
-            this.$emit('addProjectDefinitionsCache', {
-              projectCode: code,
-              definitionList
             })
             resolve(definitionList)
           })
@@ -289,26 +281,16 @@
             }
           })
         } else {
-          // Get uniq definitionCodes and projectCodes
-          const definitionCodes = _.uniq(this.dependItemList.map(dep => dep.definitionCode)).join(',')
-
-          // Query all tasks by definitionCodes, definitionCodes can cross projects
-          this._getDependItemList(definitionCodes, false)
-            .then(definitionTasks => {
-              _.map(this.dependItemList, (dep, i) => {
-                const definitionList = this.projectDefinitionsCache[dep.projectCode]
-                const depTasksList = (definitionTasks[dep.definitionCode] || [])
-                  .map(task => ({ code: task.code, name: task.name }))
-                  .concat(_.cloneDeep(DEP_ALL_TASK))
-
-                this.$set(this.dependItemList, i, this._rtOldParams(
-                  dep.definitionCode,
-                  definitionList,
-                  depTasksList,
-                  dep
-                ))
+          // get definitionCode codes
+          let codes = _.map(this.dependItemList, v => v.definitionCode).join(',')
+          // get item list
+          this._getDependItemList(codes, false).then(res => {
+            _.map(this.dependItemList, (v, i) => {
+              this._getProcessByProjectCode(v.projectCode).then(definitionList => {
+                this.$set(this.dependItemList, i, this._rtOldParams(v.definitionCode, definitionList, [_.cloneDeep(DEP_ALL_TASK)].concat(_.map(res[v.definitionCode] || [], v => ({ code: v.code, name: v.name }))), v))
               })
             })
+          })
         }
       })
     },

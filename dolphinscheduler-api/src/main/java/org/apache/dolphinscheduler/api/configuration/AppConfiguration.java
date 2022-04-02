@@ -17,10 +17,12 @@
 
 package org.apache.dolphinscheduler.api.configuration;
 
-import java.util.Locale;
 import org.apache.dolphinscheduler.api.interceptor.LocaleChangeInterceptor;
 import org.apache.dolphinscheduler.api.interceptor.LoginHandlerInterceptor;
 import org.apache.dolphinscheduler.api.interceptor.RateLimitInterceptor;
+
+import java.util.Locale;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,7 +45,7 @@ public class AppConfiguration implements WebMvcConfigurer {
 
     public static final String LOGIN_INTERCEPTOR_PATH_PATTERN = "/**/*";
     public static final String LOGIN_PATH_PATTERN = "/login";
-    public static final String REGISTER_PATH_PATTERN = "/users/register";
+    public static final String REGISTER_PATH_PATTERN = "/users/registry";
     public static final String PATH_PATTERN = "/**";
     public static final String LOCALE_LANGUAGE_COOKIE = "language";
 
@@ -102,7 +104,7 @@ public class AppConfiguration implements WebMvcConfigurer {
                 .addPathPatterns(LOGIN_INTERCEPTOR_PATH_PATTERN)
                 .excludePathPatterns(LOGIN_PATH_PATTERN, REGISTER_PATH_PATTERN,
                         "/swagger-resources/**", "/webjars/**", "/v2/**",
-                        "/doc.html", "/swagger-ui.html", "*.html", "/ui/**", "/error");
+                        "/doc.html", "/swagger-ui.html", "*.html", "/ui/**");
     }
 
     @Override
@@ -116,8 +118,8 @@ public class AppConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        registry.addViewController("/").setViewName("redirect:/ui/");
         registry.addViewController("/ui/").setViewName("forward:/ui/index.html");
+        registry.addViewController("/").setViewName("forward:/ui/index.html");
     }
 
     /**

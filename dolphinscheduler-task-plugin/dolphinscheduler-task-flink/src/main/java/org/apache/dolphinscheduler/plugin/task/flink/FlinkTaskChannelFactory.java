@@ -17,15 +17,12 @@
 
 package org.apache.dolphinscheduler.plugin.task.flink;
 
-import org.apache.dolphinscheduler.plugin.task.api.TaskChannel;
-import org.apache.dolphinscheduler.plugin.task.api.TaskChannelFactory;
 import org.apache.dolphinscheduler.spi.params.base.PluginParams;
+import org.apache.dolphinscheduler.spi.task.TaskChannel;
+import org.apache.dolphinscheduler.spi.task.TaskChannelFactory;
 
 import java.util.List;
 
-import com.google.auto.service.AutoService;
-
-@AutoService(TaskChannelFactory.class)
 public class FlinkTaskChannelFactory implements TaskChannelFactory {
     @Override
     public TaskChannel create() {

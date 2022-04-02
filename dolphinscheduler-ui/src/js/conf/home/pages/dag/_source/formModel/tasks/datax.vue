@@ -367,10 +367,7 @@
         this.keypress = () => {
           if (!editor.getOption('readOnly')) {
             editor.showHint({
-              completeSingle: false,
-              extraKeys: {
-                Enter: ''
-              }
+              completeSingle: false
             })
           }
         }
@@ -398,10 +395,7 @@
         this.keypress = () => {
           if (!jsonEditor.getOption('readOnly')) {
             jsonEditor.showHint({
-              completeSingle: false,
-              extraKeys: {
-                Enter: ''
-              }
+              completeSingle: false
             })
           }
         }

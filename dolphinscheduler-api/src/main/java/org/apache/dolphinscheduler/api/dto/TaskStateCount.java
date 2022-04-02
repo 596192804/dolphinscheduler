@@ -14,10 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dolphinscheduler.api.dto;
 
-import org.apache.dolphinscheduler.plugin.task.api.enums.ExecutionStatus;
+import org.apache.dolphinscheduler.common.enums.ExecutionStatus;
 
 /**
  * task state count
@@ -31,6 +30,7 @@ public class TaskStateCount {
         this.taskStateType = taskStateType;
         this.count = count;
     }
+
 
     public int getCount() {
         return count;

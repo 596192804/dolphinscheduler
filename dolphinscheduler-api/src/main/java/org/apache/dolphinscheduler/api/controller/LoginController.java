@@ -21,6 +21,8 @@ import static org.apache.dolphinscheduler.api.enums.Status.IP_IS_EMPTY;
 import static org.apache.dolphinscheduler.api.enums.Status.SIGN_OUT_ERROR;
 import static org.apache.dolphinscheduler.api.enums.Status.USER_LOGIN_FAILURE;
 
+import com.google.common.base.Charsets;
+import com.google.common.hash.Hashing;
 import org.apache.dolphinscheduler.api.aspect.AccessLogAnnotation;
 import org.apache.dolphinscheduler.api.enums.Status;
 import org.apache.dolphinscheduler.api.exceptions.ApiException;
@@ -33,6 +35,7 @@ import org.apache.dolphinscheduler.dao.entity.User;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.IOException;
 import java.util.Map;
 
 import javax.servlet.http.Cookie;
@@ -40,11 +43,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -136,4 +135,31 @@ public class LoginController extends BaseController {
         request.removeAttribute(Constants.SESSION_USER);
         return success();
     }
+
+    /**
+     * smartdata login
+     *
+     * @param loginUser login user
+     * @param request request
+     * @return sign out result
+     */
+    @ApiOperation(value = "smartdata", notes = "smartdata登入")
+    @GetMapping(value = "/smartdata")
+    @ApiException(SIGN_OUT_ERROR)
+    @AccessLogAnnotation(ignoreRequestArgs = {"loginUser", "request"})
+    public Result smartdata(@ApiIgnore @RequestAttribute(value = Constants.SESSION_USER) User loginUser,
+                          HttpServletRequest request, HttpServletResponse response) throws IOException {
+
+        final String userName = loginUser.getUserName(); //单点到smartdata的用户
+        String nativeToken = userName + "@cboard2019";
+        String correctToken = Hashing.md5().newHasher().putString(nativeToken, Charsets.UTF_8).hash().toString();
+        String host = request.getHeader("BasePath");  //获取ngnix代理的 Host端口 地址
+        if(host==null || host.length()==0) {
+            return error(0, "ngnix没有配置BasePath，请设置proxy_set_header BasePath $host:$server_port;");
+        }
+        String url = "http://" + host + "/smartdata/login.do?username="+ userName + "&token=" + correctToken;
+        response.sendRedirect(url);
+        return success();
+    }
+
 }

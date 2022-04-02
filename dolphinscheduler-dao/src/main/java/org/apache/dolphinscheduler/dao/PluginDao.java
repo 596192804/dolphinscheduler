@@ -19,16 +19,30 @@ package org.apache.dolphinscheduler.dao;
 
 import static java.util.Objects.requireNonNull;
 
+import org.apache.dolphinscheduler.common.utils.CollectionUtils;
+import org.apache.dolphinscheduler.dao.datasource.ConnectionFactory;
 import org.apache.dolphinscheduler.dao.entity.PluginDefine;
 import org.apache.dolphinscheduler.dao.mapper.PluginDefineMapper;
 
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class PluginDao {
+public class PluginDao extends AbstractBaseDao {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
     @Autowired
     private PluginDefineMapper pluginDefineMapper;
+
+    @Override
+    protected void init() {
+        pluginDefineMapper = ConnectionFactory.getInstance().getMapper(PluginDefineMapper.class);
+    }
 
     /**
      * check plugin define table exist
@@ -37,6 +51,16 @@ public class PluginDao {
      */
     public boolean checkPluginDefineTableExist() {
         return pluginDefineMapper.checkTableExist() > 0;
+    }
+
+    /**
+     * add pluginDefine
+     *
+     * @param pluginDefine plugin define entiy
+     * @return plugin define id
+     */
+    public int addPluginDefine(PluginDefine pluginDefine) {
+        return pluginDefineMapper.insert(pluginDefine);
     }
 
     /**
@@ -49,13 +73,11 @@ public class PluginDao {
         requireNonNull(pluginDefine.getPluginName(), "pluginName is null");
         requireNonNull(pluginDefine.getPluginType(), "pluginType is null");
 
-        PluginDefine currPluginDefine = pluginDefineMapper.queryByNameAndType(pluginDefine.getPluginName(), pluginDefine.getPluginType());
-        if (currPluginDefine == null) {
-            if (pluginDefineMapper.insert(pluginDefine) == 1 && pluginDefine.getId() > 0) {
-                return pluginDefine.getId();
-            }
-            throw new IllegalStateException("Failed to insert plugin definition");
+        List<PluginDefine> pluginDefineList = pluginDefineMapper.queryByNameAndType(pluginDefine.getPluginName(), pluginDefine.getPluginType());
+        if (CollectionUtils.isEmpty(pluginDefineList)) {
+            return pluginDefineMapper.insert(pluginDefine);
         }
+        PluginDefine currPluginDefine = pluginDefineList.get(0);
         if (!currPluginDefine.getPluginParams().equals(pluginDefine.getPluginParams())) {
             currPluginDefine.setUpdateTime(pluginDefine.getUpdateTime());
             currPluginDefine.setPluginParams(pluginDefine.getPluginParams());
@@ -72,5 +94,13 @@ public class PluginDao {
      */
     public PluginDefine getPluginDefineById(int pluginDefineId) {
         return pluginDefineMapper.selectById(pluginDefineId);
+    }
+
+    public PluginDefineMapper getPluginDefineMapper() {
+        return pluginDefineMapper;
+    }
+
+    public void setPluginDefineMapper(PluginDefineMapper pluginDefineMapper) {
+        this.pluginDefineMapper = pluginDefineMapper;
     }
 }

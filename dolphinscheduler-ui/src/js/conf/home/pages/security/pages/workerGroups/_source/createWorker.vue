@@ -16,8 +16,6 @@
  */
 <template>
   <m-popover
-          okId="btnSubmit"
-          cancelId="btnCancel"
           ref="popover"
           :ok-text="item ? $t('Edit') : $t('Submit')"
           @ok="_ok"
@@ -29,7 +27,6 @@
           <template slot="name"><strong>*</strong>{{$t('Group Name')}}</template>
           <template slot="content">
             <el-input
-                    id="inputWorkerGroupName"
                     type="input"
                     v-model="name"
                     maxlength="60"
@@ -41,7 +38,7 @@
         <m-list-box-f>
           <template slot="name"><strong>*</strong>{{$t('Worker Addresses')}}</template>
           <template slot="content">
-            <treeselect id="selectWorkerAddress" :options="this.workerAddressList" v-model="addrList" :multiple="true" :placeholder="$t('Please select the worker addresses')"></treeselect>
+            <treeselect :options="this.workerAddressList" v-model="addrList" :multiple="true" :placeholder="$t('Please select the worker addresses')"></treeselect>
           </template>
         </m-list-box-f>
       </div>

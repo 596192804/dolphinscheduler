@@ -105,7 +105,7 @@
         })
       },
       close () {
-        this.$emit('close')
+        this.renameDialog = false
       }
     },
     watch: {},

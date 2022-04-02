@@ -50,22 +50,13 @@
                 <!-- maven plugin ignore -->
                 <exclude>release.properties</exclude>
                 <exclude>**/pom.xml.releaseBackup</exclude>
+                <exclude>**/cobertura.ser</exclude>
                 <exclude>*.gpg</exclude>
 
                 <!-- node ignore -->
                 <exclude>**/dolphinscheduler-ui/dist/**</exclude>
                 <exclude>**/dolphinscheduler-ui/node/**</exclude>
                 <exclude>**/dolphinscheduler-ui/node_modules/**</exclude>
-                <exclude>**/dolphinscheduler-ui-next/dist/**</exclude>
-                <exclude>**/dolphinscheduler-ui-next/node/**</exclude>
-                <exclude>**/dolphinscheduler-ui-next/node_modules/**</exclude>
-
-                <!-- python ignore -->
-                <exclude>**/dolphinscheduler-python/pydolphinscheduler/.pytest_cache/**</exclude>
-                <exclude>**/dolphinscheduler-python/pydolphinscheduler/build/**</exclude>
-                <exclude>**/dolphinscheduler-python/pydolphinscheduler/dist/**</exclude>
-                <exclude>**/dolphinscheduler-python/pydolphinscheduler/dist/**</exclude>
-                <exclude>**/dolphinscheduler-python/pydolphinscheduler/htmlcov/**</exclude>
 
                 <!-- eclipse ignore -->
                 <exclude>**/.settings/**</exclude>

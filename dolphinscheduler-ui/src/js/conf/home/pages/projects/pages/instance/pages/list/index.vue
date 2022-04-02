@@ -208,6 +208,9 @@
 <style lang="scss" rel="stylesheet/scss">
   .wrap-table {
     .table-box {
+      overflow-y: scroll;
+    }
+    .table-box {
       .fixed {
         table-layout: auto;
         tr {

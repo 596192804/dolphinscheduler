@@ -41,7 +41,7 @@ public interface UdfFuncMapper extends BaseMapper<UdfFunc> {
      * @param funcNames funcNames
      * @return udf function list
      */
-    List<UdfFunc> queryUdfByIdStr(@Param("ids") Integer[] ids,
+    List<UdfFunc> queryUdfByIdStr(@Param("ids") int[] ids,
                                   @Param("funcNames") String funcNames);
 
     /**

@@ -23,7 +23,6 @@
       size=""
       :with-header="false"
       :wrapperClosable="false"
-      class="task-drawer"
     >
       <!-- fix the bug that Element-ui(2.13.2) auto focus on the first input -->
       <div style="width: 0px; height: 0px; overflow: hidden">
@@ -32,7 +31,6 @@
       <m-form-model
         v-if="taskDrawer"
         :nodeData="nodeData"
-        :project-code="projectCode"
         @seeHistory="seeHistory"
         @addTaskInfo="addTaskInfo"
         @close="closeTaskDrawer"
@@ -62,10 +60,6 @@
     </el-dialog>
     <edge-edit-model ref="edgeEditModel" />
     <el-drawer :visible.sync="versionDrawer" size="" :with-header="false">
-      <!-- fix the bug that Element-ui(2.13.2) auto focus on the first input -->
-      <div style="width: 0px; height: 0px; overflow: hidden">
-        <el-input type="text" />
-      </div>
       <m-versions
         :versionData="versionData"
         :isInstance="type === 'instance'"
@@ -193,6 +187,7 @@
     },
     beforeDestroy () {
       this.resetParams()
+
       clearInterval(this.statusTimer)
       window.removeEventListener('resize', this.resizeDebounceFunc)
     },
@@ -227,8 +222,7 @@
         'setIsEditDag',
         'setName',
         'setLocations',
-        'resetLocalParam',
-        'setDependResult'
+        'resetLocalParam'
       ]),
       /**
        * Toggle full screen
@@ -270,7 +264,6 @@
       addTaskInfo ({ item }) {
         this.addTask(item)
         this.$refs.canvas.setNodeName(item.code, item.name)
-        this.$refs.canvas.setNodeForbiddenStatus(item.code, item.flag === 'NO')
         this.taskDrawer = false
       },
       closeTaskDrawer ({ flag }) {
@@ -333,11 +326,11 @@
                     })
                     if (this.type === 'instance') {
                       this.$router.push({
-                        path: `/projects/${this.projectCode}/instance/list/${methodParam}`
+                        path: `/projects/${this.projectCode}/instance/list`
                       })
                     } else {
                       this.$router.push({
-                        path: `/projects/${this.projectCode}/definition/list/${methodParam}`
+                        path: `/projects/${this.projectCode}/definition/list`
                       })
                     }
                   })
@@ -407,14 +400,12 @@
       buildGraphJSON (tasks, locations, connects) {
         const nodes = []
         const edges = []
-        if (!locations) { locations = [] }
         tasks.forEach((task) => {
           const location = locations.find((l) => l.taskCode === task.code) || {}
           const node = this.$refs.canvas.genNodeJSON(
             task.code,
             task.taskType,
             task.name,
-            task.flag === 'NO',
             {
               x: location.x,
               y: location.y
@@ -422,7 +413,6 @@
           )
           nodes.push(node)
         })
-
         connects
           .filter((r) => !!r.preTaskCode)
           .forEach((c) => {
@@ -494,10 +484,6 @@
         const connects = this.connects
         const json = this.buildGraphJSON(tasks, locations, connects)
         this.$refs.canvas.fromJSON(json)
-        // Auto format
-        if (!locations) {
-          this.$refs.canvas.format()
-        }
       },
       /**
        * Return to the previous process
@@ -535,7 +521,7 @@
         this.$router.push({
           name: 'task-instance',
           query: {
-            processInstanceId: this.instanceId,
+            processInstanceId: this.$route.params.code,
             taskName: taskName
           }
         })
@@ -567,7 +553,6 @@
           .then((res) => {
             this.$message(this.$t('Refresh status succeeded'))
             const { taskList } = res.data
-            const list = res.list
             if (taskList) {
               this.taskInstances = taskList
               taskList.forEach((taskInstance) => {
@@ -576,13 +561,6 @@
                   state: taskInstance.state,
                   taskInstance
                 })
-              })
-            }
-            if (list) {
-              list.forEach((dependent) => {
-                if (dependent.dependentResult) {
-                  this.setDependResult(JSON.parse(dependent.dependentResult))
-                }
               })
             }
           })

@@ -16,8 +16,6 @@
  */
 <template>
   <m-popover
-          okId="btnSubmit"
-          cancelId="btnCancel"
           ref="popover"
           :ok-text="item ? $t('Edit') : $t('Submit')"
           @ok="_ok"
@@ -28,7 +26,6 @@
           <template slot="name"><strong>*</strong>{{$t('User Name')}}</template>
           <template slot="content">
             <el-input
-                    id="inputUserName"
                     type="input"
                     v-model="userName"
                     maxlength="60"
@@ -41,7 +38,6 @@
           <template slot="name"><strong>*</strong>{{$t('Password')}}</template>
           <template slot="content">
             <el-input
-                    id="inputUserPassword"
                     type="password"
                     v-model="userPassword"
                     size="small"
@@ -83,7 +79,6 @@
           <template slot="name"><strong>*</strong>{{$t('Email')}}</template>
           <template slot="content">
             <el-input
-                    id="inputEmail"
                     type="input"
                     v-model="email"
                     size="small"
@@ -95,7 +90,6 @@
           <template slot="name">{{$t('Phone')}}</template>
           <template slot="content">
             <el-input
-                    id="inputPhone"
                     type="input"
                     v-model="phone"
                     size="small"
@@ -103,7 +97,7 @@
             </el-input>
           </template>
         </m-list-box-f>
-        <m-list-box-f v-if="showState" style="line-height: 38px;">
+        <m-list-box-f style="line-height: 38px;">
           <template slot="name">{{$t('State')}}</template>
           <template slot="content">
             <el-radio-group v-model="userState" size="small">
@@ -123,7 +117,6 @@
   import router from '@/conf/home/router'
   import mPopover from '@/module/components/popup/popover'
   import mListBoxF from '@/module/components/listBoxF/listBoxF'
-  import { mapState } from 'vuex'
 
   export default {
     name: 'create-user',
@@ -140,7 +133,6 @@
         phone: '',
         userState: '1',
         tenantList: [],
-        showState: true,
         // Source admin user information
         isADMIN: store.state.user.userInfo.userType === 'ADMIN_USER' && router.history.current.name !== 'account'
       }
@@ -197,12 +189,6 @@
             this.$message.warning(`${i18n.$t('Password consists of at least two combinations of numbers, letters, and characters, and the length is between 6-22')}`)
             return false
           }
-        }
-
-        // Verify tenant
-        if (!this.tenantId) {
-          this.$message.warning(`${i18n.$t('select tenant')}`)
-          return false
         }
 
         // email
@@ -300,7 +286,6 @@
     watch: {},
     created () {
       // Administrator gets tenant list
-      this.showState = true
       if (this.isADMIN) {
         Promise.all([this._getQueueList(), this._getTenantList()]).then(() => {
           if (this.item) {
@@ -310,7 +295,6 @@
             this.phone = this.item.phone
             this.state = this.item.state
             this.userState = this.item.state + '' || '1'
-            this.showState = this.item.id !== this.userInfo.id
             if (this.fromUserInfo || this.item.tenantId) {
               this.tenantId = this.item.tenantId
             }
@@ -330,7 +314,6 @@
           this.phone = this.item.phone
           this.state = this.item.state
           this.userState = this.state + '' || '1'
-          this.showState = this.item.id !== this.userInfo.id
           if (this.fromUserInfo || this.item.tenantId) {
             this.tenantId = this.item.tenantId
           }
@@ -346,9 +329,7 @@
       }
     },
     mounted () {
-    },
-    computed: {
-      ...mapState('user', ['userInfo'])
+
     },
     components: { mPopover, mListBoxF }
   }

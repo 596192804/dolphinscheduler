@@ -143,17 +143,7 @@ public interface ResourceMapper extends BaseMapper<Resource> {
      * @param type type
      * @return true if exist else return null
      */
-    Boolean existResourceByUser(@Param("fullName") String fullName,
+    Boolean existResource(@Param("fullName") String fullName,
                               @Param("userId") int userId,
                               @Param("type") int type);
-
-    /**
-     * check resource exist
-     * @param fullName full name
-     * @param type type
-     * @return true if exist else return null
-     */
-    Boolean existResource(@Param("fullName") String fullName,
-                          @Param("type") int type);
-
 }

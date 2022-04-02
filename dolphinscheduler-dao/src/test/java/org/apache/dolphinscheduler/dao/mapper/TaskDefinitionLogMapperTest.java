@@ -17,9 +17,11 @@
 
 package org.apache.dolphinscheduler.dao.mapper;
 
-import org.apache.dolphinscheduler.dao.BaseDaoTest;
+import org.apache.dolphinscheduler.common.enums.TaskType;
+import org.apache.dolphinscheduler.dao.entity.Project;
 import org.apache.dolphinscheduler.dao.entity.TaskDefinition;
 import org.apache.dolphinscheduler.dao.entity.TaskDefinitionLog;
+import org.apache.dolphinscheduler.dao.entity.User;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,12 +29,30 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
-public class TaskDefinitionLogMapperTest extends BaseDaoTest {
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@Transactional
+@Rollback(true)
+public class TaskDefinitionLogMapperTest {
 
     @Autowired
-    private TaskDefinitionLogMapper taskDefinitionLogMapper;
+    TaskDefinitionLogMapper taskDefinitionLogMapper;
+
+    @Autowired
+    TaskDefinitionMapper taskDefinitionMapper;
+
+    @Autowired
+    UserMapper userMapper;
+
+    @Autowired
+    ProjectMapper projectMapper;
 
     public TaskDefinitionLog insertOne() {
         return insertOne(99);
@@ -43,7 +63,7 @@ public class TaskDefinitionLogMapperTest extends BaseDaoTest {
         taskDefinition.setCode(888888L);
         taskDefinition.setName("unit-test");
         taskDefinition.setProjectCode(1L);
-        taskDefinition.setTaskType("SHELL");
+        taskDefinition.setTaskType(TaskType.SHELL.getDesc());
         taskDefinition.setUserId(userId);
         taskDefinition.setEnvironmentCode(1L);
         taskDefinition.setWorkerGroup("default");
@@ -82,7 +102,7 @@ public class TaskDefinitionLogMapperTest extends BaseDaoTest {
         taskDefinition.setCode(888888L);
         taskDefinition.setName("unit-test");
         taskDefinition.setProjectCode(1L);
-        taskDefinition.setTaskType("SHELL");
+        taskDefinition.setTaskType(TaskType.SHELL.getDesc());
         taskDefinition.setUserId(1);
         taskDefinition.setResourceIds("1");
         taskDefinition.setVersion(1);

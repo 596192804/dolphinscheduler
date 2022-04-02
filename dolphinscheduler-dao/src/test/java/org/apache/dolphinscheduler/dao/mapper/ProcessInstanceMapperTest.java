@@ -14,38 +14,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dolphinscheduler.dao.mapper;
 
+
+import org.apache.dolphinscheduler.common.enums.ExecutionStatus;
 import org.apache.dolphinscheduler.common.enums.Flag;
 import org.apache.dolphinscheduler.common.enums.ReleaseState;
-import org.apache.dolphinscheduler.dao.BaseDaoTest;
 import org.apache.dolphinscheduler.dao.entity.ExecuteStatusCount;
 import org.apache.dolphinscheduler.dao.entity.ProcessDefinition;
 import org.apache.dolphinscheduler.dao.entity.ProcessInstance;
 import org.apache.dolphinscheduler.dao.entity.Project;
-import org.apache.dolphinscheduler.plugin.task.api.enums.ExecutionStatus;
 
 import java.util.Date;
 import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
-public class ProcessInstanceMapperTest extends BaseDaoTest {
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@Transactional
+@Rollback(true)
+public class ProcessInstanceMapperTest {
+
 
     @Autowired
-    private ProcessInstanceMapper processInstanceMapper;
+    ProcessInstanceMapper processInstanceMapper;
 
     @Autowired
-    private ProcessDefinitionMapper processDefinitionMapper;
+    ProcessDefinitionMapper processDefinitionMapper;
 
     @Autowired
-    private ProjectMapper projectMapper;
+    ProjectMapper projectMapper;
+
 
     /**
      * insert process instance with specified start time and end time,set state to SUCCESS
@@ -156,6 +166,7 @@ public class ProcessInstanceMapperTest extends BaseDaoTest {
     @Test
     public void testQueryProcessInstanceListPaging() {
 
+
         int[] stateArray = new int[]{
                 ExecutionStatus.RUNNING_EXECUTION.ordinal(),
                 ExecutionStatus.SUCCESS.ordinal()};
@@ -175,6 +186,7 @@ public class ProcessInstanceMapperTest extends BaseDaoTest {
         processInstance.setStartTime(new Date());
 
         processInstanceMapper.updateById(processInstance);
+
 
         Page<ProcessInstance> page = new Page(1, 3);
 
@@ -225,6 +237,7 @@ public class ProcessInstanceMapperTest extends BaseDaoTest {
     @Test
     public void testUpdateProcessInstanceByState() {
 
+
         ProcessInstance processInstance = insertOne();
 
         processInstance.setState(ExecutionStatus.RUNNING_EXECUTION);
@@ -264,7 +277,8 @@ public class ProcessInstanceMapperTest extends BaseDaoTest {
 
         Long[] projectCodes = new Long[]{processDefinition.getProjectCode()};
 
-        List<ExecuteStatusCount> executeStatusCounts = processInstanceMapper.countInstanceStateByProjectCodes(null, null, projectCodes);
+        List<ExecuteStatusCount> executeStatusCounts = processInstanceMapper.countInstanceStateByUser(null, null, projectCodes);
+
 
         Assert.assertNotEquals(executeStatusCounts.size(), 0);
 
@@ -280,6 +294,7 @@ public class ProcessInstanceMapperTest extends BaseDaoTest {
     public void testQueryByProcessDefineId() {
         ProcessInstance processInstance = insertOne();
         ProcessInstance processInstance1 = insertOne();
+
 
         List<ProcessInstance> processInstances = processInstanceMapper.queryByProcessDefineCode(processInstance.getProcessDefinitionCode(), 1);
         Assert.assertEquals(1, processInstances.size());
@@ -347,6 +362,7 @@ public class ProcessInstanceMapperTest extends BaseDaoTest {
 
     }
 
+
     /**
      * test whether it is in descending order by running duration
      */
@@ -377,7 +393,7 @@ public class ProcessInstanceMapperTest extends BaseDaoTest {
         ProcessInstance processInstance3 = insertOne(startTime3, endTime3);
         Date start = new Date(2020, 1, 1, 1, 1, 1);
         Date end = new Date(2021, 1, 1, 1, 1, 1);
-        List<ProcessInstance> processInstances = processInstanceMapper.queryTopNProcessInstance(2, start, end, ExecutionStatus.SUCCESS,0L);
+        List<ProcessInstance> processInstances = processInstanceMapper.queryTopNProcessInstance(2, start, end, ExecutionStatus.SUCCESS);
         Assert.assertEquals(2, processInstances.size());
         Assert.assertTrue(isSortedByDuration(processInstances));
         for (ProcessInstance processInstance : processInstances) {

@@ -17,10 +17,7 @@
 
 package org.apache.dolphinscheduler.plugin.task.sqoop.generator.targets;
 
-import static org.apache.dolphinscheduler.plugin.datasource.api.utils.PasswordUtils.decodePassword;
-import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.DOUBLE_QUOTES;
-import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.SINGLE_QUOTES;
-import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.SPACE;
+import static org.apache.dolphinscheduler.plugin.task.datasource.PasswordUtils.decodePassword;
 import static org.apache.dolphinscheduler.plugin.task.sqoop.SqoopConstants.COLUMNS;
 import static org.apache.dolphinscheduler.plugin.task.sqoop.SqoopConstants.DB_CONNECT;
 import static org.apache.dolphinscheduler.plugin.task.sqoop.SqoopConstants.DB_PWD;
@@ -30,14 +27,17 @@ import static org.apache.dolphinscheduler.plugin.task.sqoop.SqoopConstants.LINES
 import static org.apache.dolphinscheduler.plugin.task.sqoop.SqoopConstants.TABLE;
 import static org.apache.dolphinscheduler.plugin.task.sqoop.SqoopConstants.UPDATE_KEY;
 import static org.apache.dolphinscheduler.plugin.task.sqoop.SqoopConstants.UPDATE_MODE;
+import static org.apache.dolphinscheduler.spi.task.TaskConstants.DOUBLE_QUOTES;
+import static org.apache.dolphinscheduler.spi.task.TaskConstants.SINGLE_QUOTES;
+import static org.apache.dolphinscheduler.spi.task.TaskConstants.SPACE;
 
-import org.apache.dolphinscheduler.plugin.datasource.api.utils.DataSourceUtils;
-import org.apache.dolphinscheduler.plugin.task.sqoop.SqoopTaskExecutionContext;
+import org.apache.dolphinscheduler.plugin.task.datasource.BaseConnectionParam;
+import org.apache.dolphinscheduler.plugin.task.datasource.DatasourceUtil;
 import org.apache.dolphinscheduler.plugin.task.sqoop.generator.ITargetGenerator;
 import org.apache.dolphinscheduler.plugin.task.sqoop.parameter.SqoopParameters;
 import org.apache.dolphinscheduler.plugin.task.sqoop.parameter.targets.TargetMysqlParameter;
-import org.apache.dolphinscheduler.spi.datasource.BaseConnectionParam;
 import org.apache.dolphinscheduler.spi.enums.DbType;
+import org.apache.dolphinscheduler.spi.task.request.TaskRequest;
 import org.apache.dolphinscheduler.spi.utils.JSONUtils;
 import org.apache.dolphinscheduler.spi.utils.StringUtils;
 
@@ -47,12 +47,12 @@ import org.slf4j.LoggerFactory;
 /**
  * mysql target generator
  */
-public class MySQLTargetGenerator implements ITargetGenerator {
+public class MysqlTargetGenerator implements ITargetGenerator {
 
-    private static final Logger logger = LoggerFactory.getLogger(MySQLTargetGenerator.class);
+    private static final Logger logger = LoggerFactory.getLogger(MysqlTargetGenerator.class);
 
     @Override
-    public String generate(SqoopParameters sqoopParameters, SqoopTaskExecutionContext sqoopTaskExecutionContext) {
+    public String generate(SqoopParameters sqoopParameters, TaskRequest taskExecutionContext) {
 
         StringBuilder mysqlTargetSb = new StringBuilder();
 
@@ -63,15 +63,15 @@ public class MySQLTargetGenerator implements ITargetGenerator {
             if (null != targetMysqlParameter && targetMysqlParameter.getTargetDatasource() != 0) {
 
                 // get datasource
-                BaseConnectionParam baseDataSource = (BaseConnectionParam) DataSourceUtils.buildConnectionParams(
-                        sqoopTaskExecutionContext.getTargetType(),
-                        sqoopTaskExecutionContext.getTargetConnectionParams());
+                BaseConnectionParam baseDataSource = (BaseConnectionParam) DatasourceUtil.buildConnectionParams(
+                        DbType.of(taskExecutionContext.getSqoopTaskExecutionContext().getTargetType()),
+                        taskExecutionContext.getSqoopTaskExecutionContext().getTargetConnectionParams());
 
                 if (null != baseDataSource) {
 
                     mysqlTargetSb.append(SPACE).append(DB_CONNECT)
                             .append(SPACE).append(DOUBLE_QUOTES)
-                            .append(DataSourceUtils.getJdbcUrl(DbType.MYSQL, baseDataSource)).append(DOUBLE_QUOTES)
+                            .append(DatasourceUtil.getJdbcUrl(DbType.MYSQL, baseDataSource)).append(DOUBLE_QUOTES)
                             .append(SPACE).append(DB_USERNAME)
                             .append(SPACE).append(baseDataSource.getUser())
                             .append(SPACE).append(DB_PWD)

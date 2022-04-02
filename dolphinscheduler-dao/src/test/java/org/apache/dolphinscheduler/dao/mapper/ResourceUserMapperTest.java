@@ -16,8 +16,8 @@
  */
 package org.apache.dolphinscheduler.dao.mapper;
 
+
 import org.apache.dolphinscheduler.common.Constants;
-import org.apache.dolphinscheduler.dao.BaseDaoTest;
 import org.apache.dolphinscheduler.dao.entity.ResourcesUser;
 import org.junit.Assert;
 import org.junit.Test;
@@ -31,10 +31,16 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 
-public class ResourceUserMapperTest extends BaseDaoTest {
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@Transactional
+@Rollback(true)
+public class ResourceUserMapperTest {
+
+
 
     @Autowired
-    private ResourceUserMapper resourceUserMapper;
+    ResourceUserMapper resourceUserMapper;
 
     /**
      * insert

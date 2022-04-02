@@ -17,7 +17,8 @@
 
 package org.apache.dolphinscheduler.dao.mapper;
 
-import org.apache.dolphinscheduler.dao.BaseDaoTest;
+import org.apache.dolphinscheduler.common.utils.DateUtils;
+import org.apache.dolphinscheduler.dao.entity.AlertGroup;
 import org.apache.dolphinscheduler.dao.entity.AlertPluginInstance;
 import org.apache.dolphinscheduler.dao.entity.PluginDefine;
 
@@ -25,92 +26,95 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * AlertPluginInstanceMapper mapper test
  */
-public class AlertPluginInstanceMapperTest extends BaseDaoTest {
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@Transactional
+@Rollback(true)
+public class AlertPluginInstanceMapperTest {
 
     @Autowired
-    private AlertPluginInstanceMapper alertPluginInstanceMapper;
+    AlertPluginInstanceMapper alertPluginInstanceMapper;
 
     @Autowired
-    private PluginDefineMapper pluginDefineMapper;
+    PluginDefineMapper pluginDefineMapper;
 
-    /**
-     * Test function queryAllAlertPluginInstanceList behavior with different size.
-     */
+    @Autowired
+    AlertGroupMapper alertGroupMapper;
+
     @Test
     public void testQueryAllAlertPluginInstanceList() {
-        List<AlertPluginInstance> withoutSingleOne = alertPluginInstanceMapper.queryAllAlertPluginInstanceList();
-        Assert.assertEquals(0, withoutSingleOne.size());
-
-        createAlertPluginInstance("test_instance_1");
-        List<AlertPluginInstance> withExactlyOne = alertPluginInstanceMapper.queryAllAlertPluginInstanceList();
-        Assert.assertEquals(1, withExactlyOne.size());
-
-        createAlertPluginInstance("test_instance_2");
-        List<AlertPluginInstance> withExactlyTwo = alertPluginInstanceMapper.queryAllAlertPluginInstanceList();
-        Assert.assertEquals(2, withExactlyTwo.size());
+        AlertPluginInstance alertPluginInstance = createAlertPluginInstance();
+        List<AlertPluginInstance> alertPluginInstanceList = alertPluginInstanceMapper.queryAllAlertPluginInstanceList();
+        Assert.assertTrue(alertPluginInstanceList.size() > 0);
     }
 
-    /**
-     * Test function existInstanceName with init status and single record status.
-     */
+    @Test
+    public void testQueryByAlertGroupId() {
+        createAlertPluginInstance();
+        List<AlertGroup> testAlertGroupList = alertGroupMapper.queryByGroupName("test_group_01");
+        Assert.assertNotNull(testAlertGroupList);
+        Assert.assertTrue(testAlertGroupList.size() > 0);
+        AlertGroup alertGroup = testAlertGroupList.get(0);
+    }
+
     @Test
     public void testExistInstanceName() {
         String instanceName = "test_instance";
         Assert.assertNull(alertPluginInstanceMapper.existInstanceName(instanceName));
-        createAlertPluginInstance(instanceName);
+        createAlertPluginInstance();
         Assert.assertTrue(alertPluginInstanceMapper.existInstanceName(instanceName));
     }
 
     /**
-     * Test function queryByInstanceNamePage returning with different search variables.
+     * insert
+     *
+     * @return AlertPluginInstance
      */
-    @Test
-    public void testQueryByInstanceNamePage() {
-        createAlertPluginInstance("test_with_pattern_instance");
-        createAlertPluginInstance("test_no_instance");
+    private AlertPluginInstance createAlertPluginInstance() {
 
-        Page<AlertPluginInstance> page = new Page<>(1, 10);
-        IPage<AlertPluginInstance> matchTwoRecord = alertPluginInstanceMapper.queryByInstanceNamePage(page, "test");
-        Assert.assertEquals(2, matchTwoRecord.getTotal());
-
-        IPage<AlertPluginInstance> matchOneRecord = alertPluginInstanceMapper.queryByInstanceNamePage(page, "pattern");
-        Assert.assertEquals(1, matchOneRecord.getTotal());
-    }
-
-    /**
-     * Create alert plugin instance according to given alter plugin name.
-     */
-    private void createAlertPluginInstance(String alterPluginInsName) {
-        PluginDefine pluginDefine = makeSurePluginDefineExists();
-        AlertPluginInstance alertPluginInstance = new AlertPluginInstance(pluginDefine.getId(), "", alterPluginInsName);
+        PluginDefine pluginDefine = createPluginDefine();
+        AlertGroup alertGroup = createAlertGroup("test_group_01");
+        AlertPluginInstance alertPluginInstance = new AlertPluginInstance(pluginDefine.getId(), "", "test_instance");
         alertPluginInstanceMapper.insert(alertPluginInstance);
+        return alertPluginInstance;
     }
 
     /**
-     * Make sure plugin define exists.
-     * <p>
-     * Create a new plugin define if not exists, else just return exists plugin define
+     * insert
      *
      * @return PluginDefine
      */
-    private PluginDefine makeSurePluginDefineExists() {
-        String pluginName = "test plugin";
-        String pluginType = "alert";
-        PluginDefine pluginDefine = pluginDefineMapper.queryByNameAndType(pluginName, pluginType);
-        if (pluginDefine == null) {
-            PluginDefine newPluginDefine = new PluginDefine(pluginName, pluginType, "");
-            pluginDefineMapper.insert(newPluginDefine);
-            return newPluginDefine;
-        } else {
-            return pluginDefine;
-        }
+    private PluginDefine createPluginDefine() {
+        PluginDefine pluginDefine = new PluginDefine("test plugin", "alert", "");
+        pluginDefineMapper.insert(pluginDefine);
+        return pluginDefine;
+    }
+
+    /**
+     * insert
+     *
+     * @return AlertGroup
+     */
+    private AlertGroup createAlertGroup(String groupName) {
+        AlertGroup alertGroup = new AlertGroup();
+        alertGroup.setGroupName(groupName);
+        alertGroup.setDescription("alert group 1");
+
+        alertGroup.setCreateTime(DateUtils.getCurrentDate());
+        alertGroup.setUpdateTime(DateUtils.getCurrentDate());
+
+        alertGroupMapper.insert(alertGroup);
+
+        return alertGroup;
     }
 }

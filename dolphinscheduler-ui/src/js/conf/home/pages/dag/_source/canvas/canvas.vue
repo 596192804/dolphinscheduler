@@ -27,21 +27,8 @@
     >
       <div ref="paper" class="paper"></div>
       <div ref="minimap" class="minimap"></div>
-      <div class="scale-slider">
-        <span class="scale-title">{{$t('dagScale')}}</span>
-        <el-slider
-          v-model="scale"
-          vertical
-          :max="2"
-          :min="0.2"
-          :step="0.2"
-          :marks="SCALE_MARKS"
-          @input='scaleChange'
-        />
-      </div>
       <context-menu ref="contextMenu" />
     </div>
-    <layout-config-modal ref="layoutModal" @submit="format" />
   </div>
 </template>
 
@@ -50,41 +37,41 @@
   import { Graph, DataUri } from '@antv/x6'
   import dagTaskbar from './taskbar.vue'
   import contextMenu from './contextMenu.vue'
-  import layoutConfigModal, { LAYOUT_TYPE, DEFAULT_LAYOUT_CONFIG } from './layoutConfigModal.vue'
   import {
-    NODE,
-    EDGE,
+    NODE_PROPS,
+    EDGE_PROPS,
+    PORT_PROPS,
     X6_NODE_NAME,
+    X6_PORT_OUT_NAME,
+    X6_PORT_IN_NAME,
     X6_EDGE_NAME,
+    NODE_HIGHLIGHT_PROPS,
+    PORT_HIGHLIGHT_PROPS,
+    EDGE_HIGHLIGHT_PROPS,
     NODE_STATUS_MARKUP
   } from './x6-helper'
-  import { DagreLayout, GridLayout } from '@antv/layout'
+  import { DagreLayout } from '@antv/layout'
   import { tasksType, tasksState } from '../config'
   import { mapActions, mapMutations, mapState } from 'vuex'
   import nodeStatus from './nodeStatus'
-  import x6StyleMixin from './x6-style-mixin'
-
-  const SCALE_MARKS = {
-    0.2: '0.2',
-    1: '1',
-    2: '2'
-  }
 
   export default {
     name: 'dag-canvas',
     data () {
       return {
         graph: null,
+        // Used to calculate the context menu location
+        originalScrollPosition: {
+          left: 0,
+          top: 0
+        },
         editable: true,
         dragging: {
           // Distance from the mouse to the top-left corner of the dragging element
           x: 0,
           y: 0,
           type: ''
-        },
-        // The canvas scale
-        scale: 1,
-        SCALE_MARKS
+        }
       }
     },
     provide () {
@@ -92,12 +79,10 @@
         dagCanvas: this
       }
     },
-    mixins: [x6StyleMixin],
     inject: ['dagChart'],
     components: {
       dagTaskbar,
-      contextMenu,
-      layoutConfigModal
+      contextMenu
     },
     computed: {
       ...mapState('dag', ['tasks'])
@@ -133,14 +118,6 @@
             movable: true,
             showNodeSelectionBox: false
           },
-          scaling: {
-            min: 0.2,
-            max: 2
-          },
-          mousewheel: {
-            enabled: true,
-            modifiers: ['ctrl', 'meta']
-          },
           scroller: true,
           grid: {
             size: 10,
@@ -149,10 +126,7 @@
           snapline: true,
           minimap: {
             enabled: true,
-            container: minimap,
-            scalable: false,
-            width: 200,
-            height: 120
+            container: minimap
           },
           interacting: {
             edgeLabelMovable: false,
@@ -160,6 +134,9 @@
             magnetConnectable: !!editable
           },
           connecting: {
+            snap: {
+              radius: 30
+            },
             // Whether multiple edges can be created between the same start node and end
             allowMulti: false,
             // Whether a point is allowed to connect to a blank position on the canvas
@@ -171,14 +148,32 @@
             // Whether edges are allowed to link to nodes
             allowNode: true,
             // Whether to allow edge links to ports
-            allowPort: false,
+            allowPort: true,
             // Whether all available ports or nodes are highlighted when you drag the edge
             highlight: true,
             createEdge () {
               return graph.createEdge({ shape: X6_EDGE_NAME })
             },
+            validateMagnet ({ magnet }) {
+              return magnet.getAttribute('port-group') !== X6_PORT_IN_NAME
+            },
             validateConnection (data) {
-              const { sourceCell, targetCell } = data
+              const { sourceCell, targetCell, sourceMagnet, targetMagnet } = data
+              // Connections can only be created from the output link post
+              if (
+                !sourceMagnet ||
+                sourceMagnet.getAttribute('port-group') !== X6_PORT_OUT_NAME
+              ) {
+                return false
+              }
+
+              // Can only be connected to the input link post
+              if (
+                !targetMagnet ||
+                targetMagnet.getAttribute('port-group') !== X6_PORT_IN_NAME
+              ) {
+                return false
+              }
 
               if (
                 sourceCell &&
@@ -219,9 +214,9 @@
             }
           }
         }))
-
         this.registerX6Shape()
         this.bindGraphEvent()
+        this.originalScrollPosition = graph.getScrollbarPosition()
       },
       /**
        * Register custom shapes
@@ -229,22 +224,43 @@
       registerX6Shape () {
         Graph.unregisterNode(X6_NODE_NAME)
         Graph.unregisterEdge(X6_EDGE_NAME)
-        Graph.registerNode(X6_NODE_NAME, { ...NODE })
-        Graph.registerEdge(X6_EDGE_NAME, { ...EDGE })
+        Graph.registerNode(X6_NODE_NAME, { ...NODE_PROPS })
+        Graph.registerEdge(X6_EDGE_NAME, { ...EDGE_PROPS })
       },
       /**
        * Bind grap event
        */
       bindGraphEvent () {
-        this.bindStyleEvent(this.graph)
-        // update scale bar
-        this.graph.on('scale', ({ sx }) => {
-          this.scale = sx
+        // nodes and edges hover
+        this.graph.on('cell:mouseenter', (data) => {
+          const { cell, e } = data
+          const isStatusIcon = (tagName) =>
+            tagName &&
+            (tagName.toLocaleLowerCase() === 'em' ||
+              tagName.toLocaleLowerCase() === 'body')
+          if (!isStatusIcon(e.target.tagName)) {
+            this.setHighlight(cell)
+          }
+        })
+        this.graph.on('cell:mouseleave', ({ cell }) => {
+          if (!this.graph.isSelected(cell)) {
+            this.resetHighlight(cell)
+          }
+        })
+        // select
+        this.graph.on('cell:selected', ({ cell }) => {
+          this.setHighlight(cell)
+        })
+        this.graph.on('cell:unselected', ({ cell }) => {
+          if (!this.graph.isSelected(cell)) {
+            this.resetHighlight(cell)
+          }
         })
         // right click
-        this.graph.on('node:contextmenu', ({ x, y, cell, e }) => {
-          const { x: pageX, y: pageY } = this.graph.localToPage(x, y)
-          this.$refs.contextMenu.show(pageX, pageY)
+        this.graph.on('node:contextmenu', ({ x, y, cell }) => {
+          const { left, top } = this.graph.getScrollbarPosition()
+          const o = this.originalScrollPosition
+          this.$refs.contextMenu.show(x + (o.left - left), y + (o.top - top))
           this.$refs.contextMenu.setCurrentTask({
             name: cell.data.taskName,
             type: cell.data.taskType,
@@ -262,42 +278,6 @@
             id: cell.id,
             label: labelName
           })
-        })
-        // Make sure the edge starts with node, not port
-        this.graph.on('edge:connected', ({ isNew, edge }) => {
-          if (isNew) {
-            const sourceNode = edge.getSourceNode()
-            edge.setSource(sourceNode)
-          }
-        })
-
-        // Add a node tool when the mouse entering
-        this.graph.on('node:mouseenter', ({ e, x, y, node, view }) => {
-          const nodeName = node.getData().taskName
-          node.addTools({
-            name: 'button',
-            args: {
-              markup: [
-                {
-                  tagName: 'text',
-                  textContent: nodeName,
-                  attrs: {
-                    fill: '#868686',
-                    'font-size': 16,
-                    'text-anchor': 'center'
-                  }
-                }
-              ],
-              x: 0,
-              y: 0,
-              offset: { x: 0, y: -10 }
-            }
-          })
-        })
-
-        // Remove all tools when the mouse leaving
-        this.graph.on('node:mouseleave', ({ node }) => {
-          node.removeTool('button')
         })
       },
       /**
@@ -317,6 +297,9 @@
       setEdgeLabel (id, label) {
         const edge = this.graph.getCellById(id)
         edge.setLabels(label)
+        if (this.graph.isSelected(edge)) {
+          this.setEdgeHighlight(edge)
+        }
       },
       /**
        * @param {number} limit
@@ -365,15 +348,92 @@
           node.setData({ taskName: name })
         }
       },
-      setNodeForbiddenStatus (id, flag) {
-        id += ''
-        const node = this.graph.getCellById(id)
-        if (node) {
-          if (flag) {
-            node.attr('rect/fill', '#c4c4c4')
-          } else {
-            node.attr('rect/fill', '#ffffff')
+      /**
+       * Set node highlight
+       * @param {Node} node
+       */
+      setNodeHighlight (node) {
+        const url = require(`../images/task-icos/${node.data.taskType.toLocaleLowerCase()}_hover.png`)
+        node.setAttrs(NODE_HIGHLIGHT_PROPS.attrs)
+        node.setAttrByPath('image/xlink:href', url)
+        node.setPortProp(
+          X6_PORT_OUT_NAME,
+          'attrs',
+          PORT_HIGHLIGHT_PROPS[X6_PORT_OUT_NAME].attrs
+        )
+      },
+      /**
+       * Reset node style
+       * @param {Node} node
+       */
+      resetNodeStyle (node) {
+        const url = require(`../images/task-icos/${node.data.taskType.toLocaleLowerCase()}.png`)
+        node.setAttrs(NODE_PROPS.attrs)
+        node.setAttrByPath('image/xlink:href', url)
+        node.setPortProp(
+          X6_PORT_OUT_NAME,
+          'attrs',
+          PORT_PROPS.groups[X6_PORT_OUT_NAME].attrs
+        )
+      },
+      /**
+       * Set edge highlight
+       * @param {Edge} edge
+       */
+      setEdgeHighlight (edge) {
+        const labelName = this.getEdgeLabelName(edge)
+        edge.setAttrs(EDGE_HIGHLIGHT_PROPS.attrs)
+        edge.setLabels([
+          _.merge(
+            {
+              attrs: _.cloneDeep(EDGE_HIGHLIGHT_PROPS.defaultLabel.attrs)
+            },
+            {
+              attrs: { label: { text: labelName } }
+            }
+          )
+        ])
+      },
+      /**
+       * Reset edge style
+       * @param {Edge} edge
+       */
+      resetEdgeStyle (edge) {
+        const labelName = this.getEdgeLabelName(edge)
+        edge.setAttrs(EDGE_PROPS.attrs)
+        edge.setLabels([
+          {
+            ..._.merge(
+              {
+                attrs: _.cloneDeep(EDGE_PROPS.defaultLabel.attrs)
+              },
+              {
+                attrs: { label: { text: labelName } }
+              }
+            )
           }
+        ])
+      },
+      /**
+       * Set cell highlight
+       * @param {Cell} cell
+       */
+      setHighlight (cell) {
+        if (cell.isEdge()) {
+          this.setEdgeHighlight(cell)
+        } else if (cell.isNode()) {
+          this.setNodeHighlight(cell)
+        }
+      },
+      /**
+       * Reset cell highlight
+       * @param {Cell} cell
+       */
+      resetHighlight (cell) {
+        if (cell.isEdge()) {
+          this.resetEdgeStyle(cell)
+        } else if (cell.isNode()) {
+          this.resetNodeStyle(cell)
         }
       },
       /**
@@ -452,70 +512,38 @@
           }
         )
       },
-      showLayoutModal () {
-        const layoutModal = this.$refs.layoutModal
-        if (layoutModal) {
-          layoutModal.show()
-        }
-      },
       /**
        * format
        * @desc Auto layout use @antv/layout
        */
-      format (layoutConfig) {
-        if (!layoutConfig) {
-          layoutConfig = DEFAULT_LAYOUT_CONFIG
-        }
-        this.graph.cleanSelection()
-
-        let layoutFunc = null
-        if (layoutConfig.type === LAYOUT_TYPE.DAGRE) {
-          layoutFunc = new DagreLayout({
-            type: LAYOUT_TYPE.DAGRE,
-            rankdir: 'LR',
-            align: 'UL',
-            // Calculate the node spacing based on the edge label length
-            ranksepFunc: (d) => {
-              const edges = this.graph.getOutgoingEdges(d.id)
-              let max = 0
-              if (edges && edges.length > 0) {
-                edges.forEach((edge) => {
-                  const edgeView = this.graph.findViewByCell(edge)
-                  const labelWidth = +edgeView.findAttr(
-                    'width',
-                    _.get(edgeView, ['labelSelectors', '0', 'body'], null)
-                  )
-                  max = Math.max(max, labelWidth)
-                })
-              }
-              return layoutConfig.ranksep + max
-            },
-            nodesep: layoutConfig.nodesep,
-            controlPoints: true
-          })
-        } else if (layoutConfig.type === LAYOUT_TYPE.GRID) {
-          layoutFunc = new GridLayout({
-            type: LAYOUT_TYPE.GRID,
-            preventOverlap: true,
-            preventOverlapPadding: layoutConfig.padding,
-            sortBy: '_index',
-            rows: layoutConfig.rows || undefined,
-            cols: layoutConfig.cols || undefined,
-            nodeSize: 220
-          })
-        }
-        const json = this.toJSON()
-        const nodes = json.cells
-          .filter((cell) => cell.shape === X6_NODE_NAME)
-          .map((item) => {
-            return {
-              ...item,
-              // sort by code aesc
-              _index: -item.id
+      format () {
+        const dagreLayout = new DagreLayout({
+          type: 'dagre',
+          rankdir: 'LR',
+          align: 'UL',
+          // Calculate the node spacing based on the edge label length
+          ranksepFunc: (d) => {
+            const edges = this.graph.getOutgoingEdges(d.id)
+            let max = 0
+            if (edges && edges.length > 0) {
+              edges.forEach((edge) => {
+                const edgeView = this.graph.findViewByCell(edge)
+                const labelWidth = +edgeView.findAttr(
+                  'width',
+                  _.get(edgeView, ['labelSelectors', '0', 'body'], null)
+                )
+                max = Math.max(max, labelWidth)
+              })
             }
-          })
+            return 50 + max
+          },
+          nodesep: 50,
+          controlPoints: true
+        })
+        const json = this.toJSON()
+        const nodes = json.cells.filter((cell) => cell.shape === X6_NODE_NAME)
         const edges = json.cells.filter((cell) => cell.shape === X6_EDGE_NAME)
-        const newModel = layoutFunc.layout({
+        const newModel = dagreLayout.layout({
           nodes: nodes,
           edges: edges
         })
@@ -533,22 +561,20 @@
           console.warn(`taskType:${taskType} is invalid!`)
           return
         }
-        const node = this.genNodeJSON(id, taskType, '', false, coordinate)
+        const node = this.genNodeJSON(id, taskType, '', coordinate)
         this.graph.addNode(node)
       },
       /**
        * generate node json
        * @param {number|string} id
        * @param {string} taskType
-       * @param {boolean} forbidden flag
        * @param {{x:number;y:number}} coordinate Default is { x: 100, y: 100 }
        */
-      genNodeJSON (id, taskType, taskName, flag, coordinate = { x: 100, y: 100 }) {
+      genNodeJSON (id, taskType, taskName, coordinate = { x: 100, y: 100 }) {
         id += ''
         const url = require(`../images/task-icos/${taskType.toLocaleLowerCase()}.png`)
         const truncation = taskName ? this.truncateText(taskName, 18) : id
-
-        const nodeJson = {
+        return {
           id: id,
           shape: X6_NODE_NAME,
           x: coordinate.x,
@@ -567,12 +593,6 @@
             }
           }
         }
-
-        if (flag) {
-          nodeJson.attrs.rect = { fill: '#c4c4c4' }
-        }
-
-        return nodeJson
       },
       /**
        * generate edge json
@@ -586,10 +606,12 @@
         return {
           shape: X6_EDGE_NAME,
           source: {
-            cell: sourceId
+            cell: sourceId,
+            port: X6_PORT_OUT_NAME
           },
           target: {
-            cell: targetId
+            cell: targetId,
+            port: X6_PORT_IN_NAME
           },
           labels: label ? [label] : undefined
         }
@@ -666,7 +688,7 @@
         if (node) {
           // Destroy the previous dom
           node.removeMarkup()
-          node.setMarkup(NODE.markup.concat(NODE_STATUS_MARKUP))
+          node.setMarkup(NODE_PROPS.markup.concat(NODE_STATUS_MARKUP))
           const nodeView = this.graph.findViewByCell(node)
           const el = nodeView.find('div')[0]
           nodeStatus({
@@ -690,19 +712,40 @@
         }
       },
       onDrop (e) {
-        const { type, x: eX, y: eY } = this.dragging
-        const { x, y } = this.graph.clientToLocal(e.clientX, e.clientY)
+        const { type } = this.dragging
+        const { x, y } = this.calcGraphCoordinate(e.clientX, e.clientY)
         this.genTaskCodeList({
           genNum: 1
         })
           .then((res) => {
             const [code] = res
-            this.addNode(code, type, { x: x - eX, y: y - eY })
+            this.addNode(code, type, { x, y })
             this.dagChart.openFormModel(code, type)
           })
           .catch((err) => {
             console.error(err)
           })
+      },
+      calcGraphCoordinate (mClientX, mClientY) {
+        // Distance from the mouse to the top-left corner of the container;
+        const { left: cX, top: cY } =
+          this.$refs.container.getBoundingClientRect()
+        const mouseX = mClientX - cX
+        const mouseY = mClientY - cY
+
+        // The distance that paper has been scrolled
+        const { left: sLeft, top: sTop } = this.graph.getScrollbarPosition()
+        const { left: oLeft, top: oTop } = this.originalScrollPosition
+        const scrollX = sLeft - oLeft
+        const scrollY = sTop - oTop
+
+        // Distance from the mouse to the top-left corner of the dragging element;
+        const { x: eX, y: eY } = this.dragging
+
+        return {
+          x: mouseX + scrollX - eX,
+          y: mouseY + scrollY - eY
+        }
       },
       /**
        * Get prev nodes by code
@@ -785,28 +828,6 @@
           const edge = this.genEdgeJSON(code, postCode)
           this.graph.addEdge(edge)
         })
-      },
-      /**
-       * Navigate to cell
-       * @param {string} taskName
-       */
-      navigateTo (taskName) {
-        const nodes = this.getNodes()
-        nodes.forEach((node) => {
-          if (node.data.taskName === taskName) {
-            const id = node.id
-            const cell = this.graph.getCellById(id)
-            this.graph.scrollToCell(cell, { animation: { duration: 600 } })
-            this.graph.cleanSelection()
-            this.graph.select(cell)
-          }
-        })
-      },
-      /**
-       * Canvas scale
-       */
-      scaleChange (val) {
-        this.graph.zoomTo(val)
       }
     }
   }

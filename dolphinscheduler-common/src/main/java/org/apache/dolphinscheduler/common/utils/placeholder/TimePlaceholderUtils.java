@@ -24,7 +24,7 @@ import static org.apache.dolphinscheduler.common.Constants.DIVISION_STRING;
 import static org.apache.dolphinscheduler.common.Constants.LEFT_BRACE_CHAR;
 import static org.apache.dolphinscheduler.common.Constants.LEFT_BRACE_STRING;
 import static org.apache.dolphinscheduler.common.Constants.MULTIPLY_CHAR;
-import static org.apache.dolphinscheduler.common.Constants.STAR;
+import static org.apache.dolphinscheduler.common.Constants.MULTIPLY_STRING;
 import static org.apache.dolphinscheduler.common.Constants.N;
 import static org.apache.dolphinscheduler.common.Constants.P;
 import static org.apache.dolphinscheduler.common.Constants.RIGHT_BRACE_CHAR;
@@ -266,9 +266,9 @@ public class TimePlaceholderUtils {
      * @return true or false
      */
     private static boolean compare(String peek, String cur) {
-        if (STAR.equals(peek) && (DIVISION_STRING.equals(cur) || STAR.equals(cur) || ADD_STRING.equals(cur) || SUBTRACT_STRING.equals(cur))) {
+        if (MULTIPLY_STRING.equals(peek) && (DIVISION_STRING.equals(cur) || MULTIPLY_STRING.equals(cur) || ADD_STRING.equals(cur) || SUBTRACT_STRING.equals(cur))) {
             return true;
-        } else if (DIVISION_STRING.equals(peek) && (DIVISION_STRING.equals(cur) || STAR.equals(cur) || ADD_STRING.equals(cur) || SUBTRACT_STRING.equals(cur))) {
+        } else if (DIVISION_STRING.equals(peek) && (DIVISION_STRING.equals(cur) || MULTIPLY_STRING.equals(cur) || ADD_STRING.equals(cur) || SUBTRACT_STRING.equals(cur))) {
             return true;
         } else if (ADD_STRING.equals(peek) && (ADD_STRING.equals(cur) || SUBTRACT_STRING.equals(cur))) {
             return true;
@@ -337,14 +337,14 @@ public class TimePlaceholderUtils {
 
                 Map.Entry<Date, String> entry = calcTimeExpression(timeExpression, date);
 
-                String dateStr = DateUtils.format(entry.getKey(), entry.getValue(), null);
+                String dateStr = DateUtils.format(entry.getKey(), entry.getValue());
 
-                Date timestamp = DateUtils.parse(dateStr, Constants.PARAMETER_FORMAT_TIME, null);
+                Date timestamp = DateUtils.parse(dateStr, Constants.PARAMETER_FORMAT_TIME);
 
                 value = String.valueOf(timestamp.getTime() / 1000);
             } else {
                 Map.Entry<Date, String> entry = calcTimeExpression(expression, date);
-                value = DateUtils.format(entry.getKey(), entry.getValue(), null);
+                value = DateUtils.format(entry.getKey(), entry.getValue());
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);

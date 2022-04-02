@@ -17,21 +17,39 @@
 
 package org.apache.dolphinscheduler.api.service;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.google.common.collect.Lists;
-import org.apache.commons.collections.CollectionUtils;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+
 import org.apache.dolphinscheduler.api.enums.Status;
 import org.apache.dolphinscheduler.api.service.impl.UsersServiceImpl;
 import org.apache.dolphinscheduler.api.utils.PageInfo;
 import org.apache.dolphinscheduler.api.utils.Result;
 import org.apache.dolphinscheduler.common.Constants;
-import org.apache.dolphinscheduler.common.enums.UserType;
-import org.apache.dolphinscheduler.common.storage.StorageOperate;
-import org.apache.dolphinscheduler.common.utils.EncryptionUtils;
-import org.apache.dolphinscheduler.dao.entity.*;
-import org.apache.dolphinscheduler.dao.mapper.*;
 import org.apache.dolphinscheduler.spi.enums.ResourceType;
+import org.apache.dolphinscheduler.common.enums.UserType;
+import org.apache.dolphinscheduler.common.utils.CollectionUtils;
+import org.apache.dolphinscheduler.common.utils.EncryptionUtils;
+import org.apache.dolphinscheduler.dao.entity.AlertGroup;
+import org.apache.dolphinscheduler.dao.entity.Project;
+import org.apache.dolphinscheduler.dao.entity.Resource;
+import org.apache.dolphinscheduler.dao.entity.Tenant;
+import org.apache.dolphinscheduler.dao.entity.User;
+import org.apache.dolphinscheduler.dao.mapper.AccessTokenMapper;
+import org.apache.dolphinscheduler.dao.mapper.AlertGroupMapper;
+import org.apache.dolphinscheduler.dao.mapper.DataSourceUserMapper;
+import org.apache.dolphinscheduler.dao.mapper.ProjectMapper;
+import org.apache.dolphinscheduler.dao.mapper.ProjectUserMapper;
+import org.apache.dolphinscheduler.dao.mapper.ResourceMapper;
+import org.apache.dolphinscheduler.dao.mapper.ResourceUserMapper;
+import org.apache.dolphinscheduler.dao.mapper.TenantMapper;
+import org.apache.dolphinscheduler.dao.mapper.UDFUserMapper;
+import org.apache.dolphinscheduler.dao.mapper.UserMapper;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -44,18 +62,14 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.common.collect.Lists;
 
 /**
  * users service test
  */
-@RunWith(MockitoJUnitRunner.Silent.class)
+@RunWith(MockitoJUnitRunner.class)
 public class UsersServiceTest {
 
     private static final Logger logger = LoggerFactory.getLogger(UsersServiceTest.class);
@@ -92,9 +106,6 @@ public class UsersServiceTest {
 
     @Mock
     private ProjectMapper projectMapper;
-
-    @Mock
-    private StorageOperate storageOperate;
 
     private String queueName = "UsersServiceTestQueue";
 
@@ -257,18 +268,18 @@ public class UsersServiceTest {
         String userPassword = "userTest0001";
         try {
             //user not exist
-            Map<String, Object> result = usersService.updateUser(getLoginUser(), 0, userName, userPassword, "3443@qq.com", 1, "13457864543", "queue", 1, "Asia/Shanghai");
+            Map<String, Object> result = usersService.updateUser(getLoginUser(), 0, userName, userPassword, "3443@qq.com", 1, "13457864543", "queue", 1);
             Assert.assertEquals(Status.USER_NOT_EXIST, result.get(Constants.STATUS));
             logger.info(result.toString());
 
             //success
             when(userMapper.selectById(1)).thenReturn(getUser());
-            result = usersService.updateUser(getLoginUser(), 1, userName, userPassword, "32222s@qq.com", 1, "13457864543", "queue", 1, "Asia/Shanghai");
+            result = usersService.updateUser(getLoginUser(), 1, userName, userPassword, "32222s@qq.com", 1, "13457864543", "queue", 1);
             logger.info(result.toString());
             Assert.assertEquals(Status.SUCCESS, result.get(Constants.STATUS));
         } catch (Exception e) {
             logger.error("update user error", e);
-            Assert.fail();
+            Assert.assertTrue(false);
         }
     }
 
@@ -309,89 +320,19 @@ public class UsersServiceTest {
 
     @Test
     public void testGrantProject() {
+        when(userMapper.selectById(1)).thenReturn(getUser());
+        User loginUser = new User();
         String projectIds = "100000,120000";
-        User loginUser = new User();
-        int userId = 3;
-
+        Map<String, Object> result = usersService.grantProject(loginUser, 1, projectIds);
+        logger.info(result.toString());
+        Assert.assertEquals(Status.USER_NO_OPERATION_PERM, result.get(Constants.STATUS));
         //user not exist
-        loginUser.setId(1);
         loginUser.setUserType(UserType.ADMIN_USER);
-        when(userMapper.selectById(userId)).thenReturn(null);
-        Map<String, Object> result = usersService.grantProject(loginUser, userId, projectIds);
+        result = usersService.grantProject(loginUser, 2, projectIds);
         logger.info(result.toString());
         Assert.assertEquals(Status.USER_NOT_EXIST, result.get(Constants.STATUS));
-
-        //SUCCESS
-        when(userMapper.selectById(userId)).thenReturn(getUser());
-        result = usersService.grantProject(loginUser, userId, projectIds);
-        logger.info(result.toString());
-        Assert.assertEquals(Status.SUCCESS, result.get(Constants.STATUS));
-    }
-
-    @Test
-    public void testGrantProjectByCode() {
-        // Mock Project, User
-        final long projectCode = 1L;
-        final int projectCreator = 1;
-        final int authorizer = 100;
-        Mockito.when(this.userMapper.selectById(authorizer)).thenReturn(this.getUser());
-        Mockito.when(this.userMapper.selectById(projectCreator)).thenReturn(this.getUser());
-        Mockito.when(this.projectMapper.queryByCode(projectCode)).thenReturn(this.getProject());
-
-        // ERROR: USER_NOT_EXIST
-        User loginUser = new User();
-        Map<String, Object> result = this.usersService.grantProjectByCode(loginUser, 999, projectCode);
-        logger.info(result.toString());
-        Assert.assertEquals(Status.USER_NOT_EXIST, result.get(Constants.STATUS));
-
-        // ERROR: PROJECT_NOT_FOUNT
-        result = this.usersService.grantProjectByCode(loginUser, authorizer, 999);
-        logger.info(result.toString());
-        Assert.assertEquals(Status.PROJECT_NOT_FOUND, result.get(Constants.STATUS));
-
-        // ERROR: USER_NO_OPERATION_PERM
-        loginUser.setId(999);
-        loginUser.setUserType(UserType.GENERAL_USER);
-        result = this.usersService.grantProjectByCode(loginUser, authorizer, projectCode);
-        logger.info(result.toString());
-        Assert.assertEquals(Status.USER_NO_OPERATION_PERM, result.get(Constants.STATUS));
-
-        // SUCCESS: USER IS PROJECT OWNER
-        loginUser.setId(projectCreator);
-        loginUser.setUserType(UserType.GENERAL_USER);
-        result = this.usersService.grantProjectByCode(loginUser, authorizer, projectCode);
-        logger.info(result.toString());
-        Assert.assertEquals(Status.SUCCESS, result.get(Constants.STATUS));
-
-        // SUCCESS: USER IS ADMINISTRATOR
-        loginUser.setId(999);
-        loginUser.setUserType(UserType.ADMIN_USER);
-        result = this.usersService.grantProjectByCode(loginUser, authorizer, projectCode);
-        logger.info(result.toString());
-        Assert.assertEquals(Status.SUCCESS, result.get(Constants.STATUS));
-    }
-
-    @Test
-    public void testRevokeProject() {
-        Mockito.when(this.userMapper.selectById(1)).thenReturn(this.getUser());
-
-        final long projectCode = 3682329499136L;
-
-        // user no permission
-        User loginUser = new User();
-        Map<String, Object> result = this.usersService.revokeProject(loginUser, 1, projectCode);
-        logger.info(result.toString());
-        Assert.assertEquals(Status.USER_NO_OPERATION_PERM, result.get(Constants.STATUS));
-
-        // user not exist
-        loginUser.setUserType(UserType.ADMIN_USER);
-        result = this.usersService.revokeProject(loginUser, 2, projectCode);
-        logger.info(result.toString());
-        Assert.assertEquals(Status.USER_NOT_EXIST, result.get(Constants.STATUS));
-
-        // success
-        Mockito.when(this.projectMapper.queryByCode(Mockito.anyLong())).thenReturn(new Project());
-        result = this.usersService.revokeProject(loginUser, 1, projectCode);
+        //success
+        result = usersService.grantProject(loginUser, 1, projectIds);
         logger.info(result.toString());
         Assert.assertEquals(Status.SUCCESS, result.get(Constants.STATUS));
     }
@@ -401,10 +342,12 @@ public class UsersServiceTest {
         String resourceIds = "100000,120000";
         when(userMapper.selectById(1)).thenReturn(getUser());
         User loginUser = new User();
-
+        Map<String, Object> result = usersService.grantResources(loginUser, 1, resourceIds);
+        logger.info(result.toString());
+        Assert.assertEquals(Status.USER_NO_OPERATION_PERM, result.get(Constants.STATUS));
         //user not exist
         loginUser.setUserType(UserType.ADMIN_USER);
-        Map<String, Object> result = usersService.grantResources(loginUser, 2, resourceIds);
+        result = usersService.grantResources(loginUser, 2, resourceIds);
         logger.info(result.toString());
         Assert.assertEquals(Status.USER_NOT_EXIST, result.get(Constants.STATUS));
         //success
@@ -421,10 +364,12 @@ public class UsersServiceTest {
         String udfIds = "100000,120000";
         when(userMapper.selectById(1)).thenReturn(getUser());
         User loginUser = new User();
-
+        Map<String, Object> result = usersService.grantUDFFunction(loginUser, 1, udfIds);
+        logger.info(result.toString());
+        Assert.assertEquals(Status.USER_NO_OPERATION_PERM, result.get(Constants.STATUS));
         //user not exist
         loginUser.setUserType(UserType.ADMIN_USER);
-        Map<String, Object> result = usersService.grantUDFFunction(loginUser, 2, udfIds);
+        result = usersService.grantUDFFunction(loginUser, 2, udfIds);
         logger.info(result.toString());
         Assert.assertEquals(Status.USER_NOT_EXIST, result.get(Constants.STATUS));
         //success
@@ -437,28 +382,19 @@ public class UsersServiceTest {
     @Test
     public void testGrantDataSource() {
         String datasourceIds = "100000,120000";
+        when(userMapper.selectById(1)).thenReturn(getUser());
         User loginUser = new User();
-        int userId = 3;
-
+        Map<String, Object> result = usersService.grantDataSource(loginUser, 1, datasourceIds);
+        logger.info(result.toString());
+        Assert.assertEquals(Status.USER_NO_OPERATION_PERM, result.get(Constants.STATUS));
         //user not exist
-        loginUser.setId(1);
         loginUser.setUserType(UserType.ADMIN_USER);
-        when(userMapper.selectById(userId)).thenReturn(null);
-        Map<String, Object> result = usersService.grantDataSource(loginUser, userId, datasourceIds);
+        result = usersService.grantDataSource(loginUser, 2, datasourceIds);
         logger.info(result.toString());
         Assert.assertEquals(Status.USER_NOT_EXIST, result.get(Constants.STATUS));
-
-        // test admin user
-        when(userMapper.selectById(userId)).thenReturn(getUser());
+        //success
         when(datasourceUserMapper.deleteByUserId(Mockito.anyInt())).thenReturn(1);
-        result = usersService.grantDataSource(loginUser, userId, datasourceIds);
-        logger.info(result.toString());
-        Assert.assertEquals(Status.SUCCESS, result.get(Constants.STATUS));
-
-        // test non-admin user
-        loginUser.setId(2);
-        loginUser.setUserType(UserType.GENERAL_USER);
-        result = usersService.grantDataSource(loginUser, userId, datasourceIds);
+        result = usersService.grantDataSource(loginUser, 1, datasourceIds);
         logger.info(result.toString());
         Assert.assertEquals(Status.SUCCESS, result.get(Constants.STATUS));
 
@@ -679,22 +615,6 @@ public class UsersServiceTest {
         user.setUserPassword("userTest0001");
         user.setState(0);
         return user;
-    }
-
-    /**
-     * Get project
-     * @return
-     */
-    private Project getProject() {
-        Project project = new Project();
-        project.setId(1);
-        project.setCode(1L);
-        project.setUserId(1);
-        project.setName("PJ-001");
-        project.setPerm(7);
-        project.setDefCount(0);
-        project.setInstRunningCount(0);
-        return project;
     }
 
     /**

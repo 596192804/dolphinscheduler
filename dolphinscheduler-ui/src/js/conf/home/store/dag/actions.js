@@ -18,16 +18,6 @@
 import _ from 'lodash'
 import io from '@/module/io'
 
-// Avoid passing in illegal values when users directly call third-party interfaces
-const convertLocations = (locationStr) => {
-  let locations = null
-  if (!locationStr) return locations
-  try {
-    locations = JSON.parse(locationStr)
-  } catch (error) { }
-  return Array.isArray(locations) ? locations : null
-}
-
 export default {
   /**
    *  Task status acquisition
@@ -37,13 +27,6 @@ export default {
       io.get(`projects/${state.projectCode}/process-instances/${payload}/tasks`, {
         processInstanceId: payload
       }, res => {
-        res.list = _.map(res.data.taskList, v => {
-          return _.cloneDeep({
-            code: v.taskCode,
-            taskType: v.taskType,
-            dependentResult: v.dependentResult
-          })
-        })
         state.taskInstances = res.data.taskList
         resolve(res)
       }).catch(e => {
@@ -150,20 +133,16 @@ export default {
         state.version = res.data.processDefinition.version
         // name
         state.name = res.data.processDefinition.name
-        // releaseState
-        state.releaseState = res.data.processDefinition.releaseState
         // description
         state.description = res.data.processDefinition.description
         // taskRelationJson
         state.connects = res.data.processTaskRelationList
         // locations
-        state.locations = convertLocations(res.data.processDefinition.locations)
+        state.locations = JSON.parse(res.data.processDefinition.locations)
         // global params
         state.globalParams = res.data.processDefinition.globalParamList
         // timeout
         state.timeout = res.data.processDefinition.timeout
-        // executionType
-        state.executionType = res.data.processDefinition.executionType
         // tenantCode
         state.tenantCode = res.data.processDefinition.tenantCode || 'default'
         // tasks info
@@ -183,11 +162,8 @@ export default {
           'timeoutFlag',
           'timeoutNotifyStrategy',
           'timeout',
-          'environmentCode',
-          'taskGroupId',
-          'taskGroupPriority'
+          'environmentCode'
         ]))
-
         resolve(res.data)
       }).catch(res => {
         reject(res)
@@ -259,13 +235,11 @@ export default {
         // connects
         state.connects = processTaskRelationList
         // locations
-        state.locations = convertLocations(processDefinition.locations)
+        state.locations = JSON.parse(processDefinition.locations)
         // global params
         state.globalParams = processDefinition.globalParamList
         // timeout
         state.timeout = processDefinition.timeout
-        // executionType
-        state.executionType = processDefinition.executionType
         // tenantCode
         state.tenantCode = res.data.tenantCode || 'default'
         // tasks info
@@ -308,7 +282,6 @@ export default {
         taskDefinitionJson: JSON.stringify(state.tasks),
         taskRelationJson: JSON.stringify(state.connects),
         tenantCode: state.tenantCode,
-        executionType: state.executionType,
         description: _.trim(state.description),
         globalParams: JSON.stringify(state.globalParams),
         timeout: state.timeout
@@ -330,7 +303,6 @@ export default {
         taskDefinitionJson: JSON.stringify(state.tasks),
         taskRelationJson: JSON.stringify(state.connects),
         tenantCode: state.tenantCode,
-        executionType: state.executionType,
         description: _.trim(state.description),
         globalParams: JSON.stringify(state.globalParams),
         timeout: state.timeout,
@@ -458,12 +430,16 @@ export default {
   /**
    * get jar
    */
-  getResourcesListJar ({ state }, programType) {
+  getResourcesListJar ({ state }) {
     return new Promise((resolve, reject) => {
+      if (state.resourcesListJar.length) {
+        resolve()
+        return
+      }
       io.get('resources/query-by-type', {
-        type: 'FILE',
-        programType
+        type: 'FILE'
       }, res => {
+        state.resourcesListJar = res.data
         resolve(res.data)
       }).catch(res => {
         reject(res)
@@ -853,232 +829,10 @@ export default {
       })
     })
   },
-  /**
-   * Query Task Definitions List Paging
-   */
-  getTaskDefinitionsList ({ state }, payload) {
+  getTaskDefinitions ({ state }, payload) {
     return new Promise((resolve, reject) => {
       io.get(`projects/${state.projectCode}/task-definition`, payload, res => {
         resolve(res.data)
-      }).catch(e => {
-        reject(e)
-      })
-    })
-  },
-
-  getRuleInputEntryList ({ state }, payload) {
-    return new Promise((resolve, reject) => {
-      io.get('data-quality/getRuleFormCreateJson', {
-        ruleId: payload
-      }, res => {
-        resolve(res)
-      }).catch(res => {
-        reject(res)
-      })
-    })
-  },
-
-  getRuleList ({ state }, payload) {
-    return new Promise((resolve, reject) => {
-      io.get('data-quality/ruleList', {}, res => {
-        resolve(res)
-      }).catch(res => {
-        reject(res)
-      })
-    })
-  },
-
-  getDatasourceOptionsById ({ state }, payload) {
-    return new Promise((resolve, reject) => {
-      io.get('data-quality/getDatasourceOptionsById', {
-        datasourceId: payload
-      }, res => {
-        resolve(res)
-      }).catch(res => {
-        reject(res)
-      })
-    })
-  },
-
-  getTablesById ({ state }, payload) {
-    return new Promise((resolve, reject) => {
-      io.get('datasources/tables', payload, res => {
-        resolve(res)
-      }).catch(res => {
-        reject(res)
-      })
-    })
-  },
-
-  getTableColumnsByIdAndName ({ state }, payload) {
-    return new Promise((resolve, reject) => {
-      io.get('datasources/tableColumns', payload, res => {
-        resolve(res)
-      }).catch(res => {
-        reject(res)
-      })
-    })
-  },
-  /**
-   * Delete Task Definition by code
-   */
-  deleteTaskDefinition ({ state }, payload) {
-    return new Promise((resolve, reject) => {
-      io.delete(`projects/${state.projectCode}/task-definition/${payload.taskCode}`, res => {
-        resolve(res)
-      }).catch(e => {
-        reject(e)
-      })
-    })
-  },
-  /**
-   * Save Task Definition
-   */
-  saveTaskDefinition ({ state }, payload) {
-    return new Promise((resolve, reject) => {
-      io.post(`projects/${state.projectCode}/task-definition`, {
-        taskDefinitionJson: JSON.stringify(payload.taskDefinitionJson)
-      }, res => {
-        resolve(res)
-      }).catch(e => {
-        reject(e)
-      })
-    })
-  },
-  /**
-   * Save Task Definition with upstreams
-   * @param {Object} taskDefinition
-   * @param {number[]} prevTasks
-   * @param {number} processDefinitionCode
-   */
-  saveTaskDefinitionWithUpstreams ({ state }, payload) {
-    return new Promise((resolve, reject) => {
-      io.post(`projects/${state.projectCode}/task-definition/save-single`, {
-        taskDefinitionJsonObj: JSON.stringify(payload.taskDefinition),
-        upstreamCodes: payload.prevTasks.join(','),
-        processDefinitionCode: payload.processDefinitionCode
-      }, res => {
-        resolve(res)
-      }).catch(e => {
-        reject(e)
-      })
-    })
-  },
-  /**
-   *
-   * @param {Object} taskDefinition
-   * @param {number[]} taskDefinition
-   * @returns
-   */
-  updateTaskDefinition ({ state }, payload) {
-    return new Promise((resolve, reject) => {
-      io.put(`projects/${state.projectCode}/task-definition/${payload.taskDefinition.code}/with-upstream`, {
-        taskDefinitionJsonObj: JSON.stringify(payload.taskDefinition),
-        upstreamCodes: payload.prevTasks.join(',')
-      }, res => {
-        resolve(res)
-      }).catch(e => {
-        reject(e)
-      })
-    })
-  },
-  /**
-   * Query taskDefinition by code
-   * @param {*} param0
-   */
-  getTaskDefinition ({ state }, taskDefinitionCode) {
-    return new Promise((resolve, reject) => {
-      io.get(`projects/${state.projectCode}/task-definition/${taskDefinitionCode}`, res => {
-        resolve(res.data)
-      }).catch(e => {
-        reject(e)
-      })
-    })
-  },
-  /**
-   * Get process definition detail
-   * @param {numbetr} code
-   */
-  getProcessDefinition ({ state }, code) {
-    return new Promise((resolve, reject) => {
-      io.get(`projects/${state.projectCode}/process-definition/${code}`, res => {
-        resolve(res.data)
-      }).catch(res => {
-        reject(res)
-      })
-    })
-  },
-  /**
-   * Move task
-   */
-  moveTaskToProcess ({ state }, payload) {
-    return new Promise((resolve, reject) => {
-      io.post(`projects/${state.projectCode}/process-task-relation/move`, {
-        processDefinitionCode: payload.processDefinitionCode,
-        targetProcessDefinitionCode: payload.targetProcessDefinitionCode,
-        taskCode: payload.taskCode
-      }, res => {
-        resolve(res)
-      }).catch(e => {
-        reject(e)
-      })
-    })
-  },
-  /**
-   * Delete relation
-   */
-  deleteRelation ({ state }, payload) {
-    return new Promise((resolve, reject) => {
-      io.delete(`projects/${state.projectCode}/process-task-relation/${payload.taskCode}`, {
-        processDefinitionCode: payload.processDefinitionCode
-      }, res => {
-        resolve(res)
-      }).catch(e => {
-        reject(e)
-      })
-    })
-  },
-  /**
-   * Query task versions
-   * @param {number} taskCode
-   * @param {number} pageNo
-   * @param {number} pageSize
-   */
-  getTaskVersions ({ state }, payload) {
-    return new Promise((resolve, reject) => {
-      io.get(`projects/${state.projectCode}/task-definition/${payload.taskCode}/versions`, {
-        pageNo: payload.pageNo,
-        pageSize: payload.pageSize
-      }, res => {
-        resolve(res.data)
-      }).catch(res => {
-        reject(res)
-      })
-    })
-  },
-  /**
-   * Switch task version
-   * @param {number} taskCode
-   * @param {number} version
-   */
-  switchTaskVersion ({ state }, payload) {
-    return new Promise((resolve, reject) => {
-      io.get(`projects/${state.projectCode}/task-definition/${payload.taskCode}/versions/${payload.version}`, res => {
-        resolve(res)
-      }).catch(res => {
-        reject(res)
-      })
-    })
-  },
-  /**
-   * Delete task version
-   * @param {number} taskCode
-   * @param {number} version
-   */
-  deleteTaskVersion ({ state }, payload) {
-    return new Promise((resolve, reject) => {
-      io.delete(`projects/${state.projectCode}/task-definition/${payload.taskCode}/versions/${payload.version}`, res => {
-        resolve(res)
       }).catch(e => {
         reject(e)
       })

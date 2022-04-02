@@ -18,6 +18,7 @@
 package org.apache.dolphinscheduler.dao.mapper;
 
 import static java.util.stream.Collectors.toList;
+
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -25,13 +26,11 @@ import static org.junit.Assert.assertThat;
 import org.apache.dolphinscheduler.common.Constants;
 import org.apache.dolphinscheduler.spi.enums.ResourceType;
 import org.apache.dolphinscheduler.common.enums.UserType;
-import org.apache.dolphinscheduler.dao.BaseDaoTest;
+import org.apache.dolphinscheduler.common.utils.CollectionUtils;
 import org.apache.dolphinscheduler.dao.entity.Resource;
 import org.apache.dolphinscheduler.dao.entity.ResourcesUser;
 import org.apache.dolphinscheduler.dao.entity.Tenant;
 import org.apache.dolphinscheduler.dao.entity.User;
-
-import org.apache.commons.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,24 +39,33 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
-public class ResourceMapperTest extends BaseDaoTest {
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@Transactional
+@Rollback(true)
+public class ResourceMapperTest {
 
     @Autowired
-    private ResourceMapper resourceMapper;
+    ResourceMapper resourceMapper;
 
     @Autowired
-    private ResourceUserMapper resourceUserMapper;
+    ResourceUserMapper resourceUserMapper;
 
     @Autowired
-    private TenantMapper tenantMapper;
+    TenantMapper tenantMapper;
 
     @Autowired
-    private UserMapper userMapper;
+    UserMapper userMapper;
 
     /**
      * insert
@@ -361,7 +369,7 @@ public class ResourceMapperTest extends BaseDaoTest {
         // authorize object unauthorizedResource to generalUser
         createResourcesUser(unauthorizedResource, generalUser2);
         List<Resource> authorizedResources = resourceMapper.listAuthorizedResource(generalUser2.getId(), resNames);
-        Assert.assertTrue(authorizedResources.stream().map(t -> t.getFullName()).collect(toList()).containsAll(Arrays.asList(resource.getFullName())));
+        Assert.assertTrue(authorizedResources.stream().map(t -> t.getFullName()).collect(toList()).containsAll(Arrays.asList(resNames)));
 
     }
 
@@ -418,11 +426,9 @@ public class ResourceMapperTest extends BaseDaoTest {
         String fullName = "/ut-resource";
         int userId = 111;
         int type = ResourceType.FILE.getCode();
-        Assert.assertNull(resourceMapper.existResourceByUser(fullName, userId, type));
-        Assert.assertNull(resourceMapper.existResource(fullName, type));
+        Assert.assertNull(resourceMapper.existResource(fullName, userId, type));
         insertOne();
-        Assert.assertTrue(resourceMapper.existResourceByUser(fullName, userId, type));
-        Assert.assertTrue(resourceMapper.existResource(fullName, type));
+        Assert.assertTrue(resourceMapper.existResource(fullName, userId, type));
     }
 }
 

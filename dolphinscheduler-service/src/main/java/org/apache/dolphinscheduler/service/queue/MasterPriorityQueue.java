@@ -18,7 +18,6 @@
 package org.apache.dolphinscheduler.service.queue;
 
 import org.apache.dolphinscheduler.common.model.Server;
-import org.apache.dolphinscheduler.common.utils.NetUtils;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -84,27 +83,26 @@ public class MasterPriorityQueue implements TaskPriorityQueue<Server> {
         int index = 0;
         while (iterator.hasNext()) {
             Server server = iterator.next();
-            String addr = NetUtils.getAddr(server.getHost(), server.getPort());
-            hostIndexMap.put(addr, index);
+            hostIndexMap.put(server.getHost(), index);
             index += 1;
         }
 
     }
 
-    public int getIndex(String addr) {
-        if (!hostIndexMap.containsKey(addr)) {
+    public int getIndex(String host) {
+        if (!hostIndexMap.containsKey(host)) {
             return -1;
         }
-        return hostIndexMap.get(addr);
+        return hostIndexMap.get(host);
     }
 
     /**
-     * server comparator, used to sort server by createTime in reverse order.
+     * server comparator
      */
     private class ServerComparator implements Comparator<Server> {
         @Override
         public int compare(Server o1, Server o2) {
-            return o2.getCreateTime().compareTo(o1.getCreateTime());
+            return o1.getCreateTime().before(o2.getCreateTime()) ? 1 : 0;
         }
     }
 

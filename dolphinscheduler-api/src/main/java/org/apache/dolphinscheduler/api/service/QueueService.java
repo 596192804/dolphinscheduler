@@ -76,12 +76,4 @@ public interface QueueService {
      */
     Result<Object> verifyQueue(String queue, String queueName);
 
-    /**
-     * query queue by queueName
-     *
-     * @param queueName queue name
-     * @return queue object for provide queue name
-     */
-    Map<String, Object> queryQueueName(String queueName);
-
 }

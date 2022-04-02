@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dolphinscheduler.common.thread;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,17 +23,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class Stopper {
 
-    private static AtomicBoolean signal = new AtomicBoolean(false);
-
-    public static final boolean isStopped() {
-        return signal.get();
-    }
-
-    public static final boolean isRunning() {
-        return !signal.get();
-    }
-
-    public static final void stop() {
-        signal.set(true);
-    }
+	private static AtomicBoolean signal = new AtomicBoolean(false);
+	
+	public static final boolean isStopped(){
+		return signal.get();
+	}
+	
+	public static final boolean isRunning(){
+		return !signal.get();
+	}
+	
+	public static final void stop(){
+		signal.set(true);
+	}
 }
